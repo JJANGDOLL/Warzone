@@ -8,3 +8,5 @@
 
 #include "Utilities/Logger.h"
 #include "Utilities/Helper.h"
+
+#define CheckNull(p) { if (p == nullptr) return;}

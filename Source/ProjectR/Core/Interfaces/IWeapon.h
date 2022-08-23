@@ -29,7 +29,10 @@ public:
 	virtual uint8 GetAmmunitionTotal() = 0;
 	virtual float GetRateOfFire() = 0;
 	virtual bool IsEmpty() = 0;
+
 	virtual UTexture* GetTextureWeaponBody() = 0;
 	virtual UTexture* GetTextureWeaponMagazine() = 0;
     virtual UTexture* GetTextureWeaopnIronsight() = 0;
+
+    virtual class UAnimMontage* GetFPMontageCharacterFire() = 0;
 };

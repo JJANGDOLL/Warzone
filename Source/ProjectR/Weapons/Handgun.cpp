@@ -27,12 +27,14 @@ AHandgun::AHandgun()
     UStaticMesh* meshIronsight;
     Helpers::GetAsset(&meshIronsight, TEXT("StaticMesh'/Game/AnimatedLowPolyWeapons/Art/Weapons/Handguns/SM_Handgun_03_Scope_Default.SM_Handgun_03_Scope_Default'"));
     MeshIronsight->SetStaticMesh(meshIronsight);
+    MeshIronsight->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     Helpers::CreateComponent<USceneComponent>(this, &SocketMagazine, TEXT("Socket Magazine"), MeshWeapon, TEXT("SOCKET_Magazine"));
     Helpers::CreateComponent<UStaticMeshComponent>(this, &MeshMagazine, TEXT("Mesh Magazine"), SocketMagazine);
     UStaticMesh* meshMagazine;
     Helpers::GetAsset(&meshMagazine, TEXT("StaticMesh'/Game/AnimatedLowPolyWeapons/Art/Weapons/Handguns/SM_Handgun_03_Magazine_Default.SM_Handgun_03_Magazine_Default'"));
     MeshMagazine->SetStaticMesh(meshMagazine);
+    MeshMagazine->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     // set inheritanced value
     bAutomatic = false;
@@ -57,6 +59,4 @@ AHandgun::AHandgun()
 void AHandgun::BeginPlay()
 {
     Super::BeginPlay();
-
-    OnFire();   
 }

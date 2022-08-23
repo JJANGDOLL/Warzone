@@ -5,6 +5,7 @@
 #include "Utilities/Global.h"
 
 #include <Components/SkeletalMeshComponent.h>
+#include "Animation/AnimMontage.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -24,7 +25,13 @@ void AWeaponBase::OnFire()
     AmmunitionCurrent = FMath::Clamp(AmmunitionCurrent - 1, 0, AmmunitionMax);
 
     verifyf(ParticleMuzzleFlash, L"Muzzle Flash Null");
-    UGameplayStatics::SpawnEmitterAttached(ParticleMuzzleFlash, MeshWeapon, TEXT("SOCKET_Muzzle"), FVector::ZeroVector, FRotator::ZeroRotator, FVector::OneVector, EAttachLocation::KeepRelativeOffset, true, EPSCPoolMethod::None, true);
+    for(const auto& n : MeshWeapon->GetAllSocketNames())
+    {
+        Logger::Log(n.ToString());
+    }
+//     UGameplayStatics::SpawnEmitterAttached(ParticleMuzzleFlash, MeshWeapon, TEXT("SOCKET_Muzzle"), FVector::ZeroVector);
+    UGameplayStatics::SpawnEmitterAttached(ParticleMuzzleFlash, MeshWeapon, TEXT("SOCKET_Muzzle"), FVector::ZeroVector, FRotator(0.f, 90.f, 0.f));
+//     UGameplayStatics::SpawnEmitterAttached(ParticleMuzzleFlash, MeshWeapon, "");
 }
 
 void AWeaponBase::OnReload()
@@ -74,4 +81,10 @@ UTexture* AWeaponBase::GetTextureWeaponMagazine()
 UTexture* AWeaponBase::GetTextureWeaopnIronsight()
 {
     return TextureWeaponIronsights;
+}
+
+UAnimMontage* AWeaponBase::GetFPMontageCharacterFire()
+{
+    verifyf(MontageFire, L"Fire Montage Null")
+    return MontageFire;
 }

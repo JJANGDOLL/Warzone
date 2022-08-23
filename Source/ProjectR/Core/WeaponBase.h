@@ -97,4 +97,7 @@ public:
 	UTexture* GetTextureWeaponBody() override;
 	UTexture* GetTextureWeaponMagazine() override;
 	UTexture* GetTextureWeaopnIronsight() override;
+
+	UAnimMontage* GetFPMontageCharacterFire() override;
+
 };
