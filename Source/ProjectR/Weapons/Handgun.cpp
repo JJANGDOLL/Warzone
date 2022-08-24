@@ -54,6 +54,8 @@ AHandgun::AHandgun()
     MeshWeapon->SetAnimInstanceClass(animInst);
 
     Helpers::GetAsset<UParticleSystem>(&ParticleMuzzleFlash, "ParticleSystem'/Game/InfimaGames/LowPolyShooterPack/Art/Effects/Particles/PS_Muzzle_Flash.PS_Muzzle_Flash'");
+
+    AmmunitionCurrent = AmmunitionMax;
 }
 
 void AHandgun::BeginPlay()

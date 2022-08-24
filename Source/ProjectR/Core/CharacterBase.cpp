@@ -60,6 +60,7 @@ ACharacterBase::ACharacterBase()
 
     JumpMaxHoldTime = 0.15f;
 
+    bUseControllerRotationYaw = true;
 
     // ----------------------------------------
 
@@ -68,11 +69,11 @@ ACharacterBase::ACharacterBase()
     SpringArm->bDoCollisionTest = false;
 
     Helpers::CreateComponent(this, &CameraComp, TEXT("MainCamera"), SpringArm);
-    CameraComp->bUsePawnControlRotation = true;
-    CameraComp->SetFieldOfView(90.f);
+    CameraComp->bUsePawnControlRotation = false;
+//     CameraComp->SetFieldOfView(90.f);
 
     Helpers::CreateComponent(this, &MeshArms, TEXT("Mesh Arms"), CameraComp);
-    MeshArms->SetRelativeLocation(FVector(0.f, 0.f, -165.f));
+    MeshArms->SetRelativeLocation(FVector(0.f, 0.f, -165.75f));
     MeshArms->AddRelativeRotation(FRotator(0.f ,-90.f, 0.f));
 
     USkeletalMesh* skelArmMesh;
@@ -88,7 +89,21 @@ ACharacterBase::ACharacterBase()
     // --------------------------------------------
 
     Helpers::GetAsset(&MontageFire, TEXT("AnimMontage'/Game/AnimatedLowPolyWeapons/Art/Characters/Animations/Handguns/AM_FP_PCH_Handgun_Fire.AM_FP_PCH_Handgun_Fire'"));
+    Helpers::GetAsset(&MontageReload, TEXT("AnimMontage'/Game/AnimatedLowPolyWeapons/Art/Characters/Animations/Handguns/AM_FP_PCH_Handgun_Reload.AM_FP_PCH_Handgun_Reload'"));
+    Helpers::GetAsset(&MontageReloadEmpty, TEXT("AnimMontage'/Game/AnimatedLowPolyWeapons/Art/Characters/Animations/Handguns/AM_FP_PCH_Handgun_Reload_Empty.AM_FP_PCH_Handgun_Reload_Empty'"));
 
+    bPlayingMontageInspecting = false;
+    bPlayingMontageReloading = false;
+
+    bHolstered = false;
+    bRunning = false;
+    bAiming = false;
+
+    bHoldingKeyAim = false;
+    bHoldingKeyRun = false;
+    bHoldingKeyFire = false;
+
+    bWeaponEmpty = false;
 }
 
 bool ACharacterBase::IsAiming()
@@ -103,12 +118,24 @@ bool ACharacterBase::IsRunning()
 
 bool ACharacterBase::CanAim()
 {
-    return true;
+    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading;
 }
 
 bool ACharacterBase::CanFire()
 {
-    return true;
+//     Logger::Log(bHolstered);
+//     Logger::Log(bPlayingMontageInspecting);
+//     Logger::Log(bPlayingMontageReloading);
+//     Logger::Log(bRunning);
+//     Logger::Log(WeaponActor);
+//     Logger::Log(WeaponActor->GetAmmunitionCurrent());
+
+    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading && !bRunning && WeaponActor && (WeaponActor->GetAmmunitionCurrent() > 0);
+}
+
+bool ACharacterBase::CanReload()
+{
+    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading;
 }
 
 void ACharacterBase::OnConstruction(const FTransform& Transform)
@@ -151,9 +178,9 @@ void ACharacterBase::BeginPlay()
 	ULevelSequencePlayer* levelSeqPlayer = ULevelSequencePlayer::CreateLevelSequencePlayer(GetWorld(), fadeInSeq, FMovieSceneSequencePlaybackSettings::FMovieSceneSequencePlaybackSettings(), outActor);
 	levelSeqPlayer->Play();
 
-    verifyf(CameraComp, L"Camera component null")
+    verifyf(CameraComp, L"Camera component null");
 
-    Logger::Log(CameraComp);
+    NewWeapon();
 }
 
 // Called every frame
@@ -161,9 +188,18 @@ void ACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    SpringArm->SetRelativeLocation(FMath::VInterpTo(SpringArm->GetRelativeLocation(), GetViewLocation(), GetWorld()->GetDeltaSeconds(), 15.0f));
+    SpringArm->SetRelativeRotation(FRotator(GetControlRotation().Pitch, 0.f, 0.f));
+//     SpringArm->SetRelativeRotation(FRotator(0.f, GetControlRotation().Pitch, 0.f));
+    SetActorRelativeRotation(FRotator(0.f, GetControlRotation().Yaw, 0.f));
+
+    if (WeaponActor)
+        bWeaponEmpty = WeaponActor->IsEmpty();
 
     CameraComp->SetFieldOfView(MeshArms->GetAnimInstance()->GetCurveValue(TEXT("Field Of View")));
+
+    FTransform cameraTransform = MeshArms->GetSocketTransform(TEXT("SOCKET_Camera"), RTS_Component);
+
+    SpringArm->SetRelativeLocation(FMath::VInterpTo(SpringArm->GetRelativeLocation(), GetViewLocation(), GetWorld()->GetDeltaSeconds(), 15.0f));
 
 
 
@@ -185,19 +221,13 @@ void ACharacterBase::Tick(float DeltaTime)
         }
     }
 
-    if (bDebug)
-    {
-        Logger::Log(bHoldingKeyFire);
-        Logger::Log(WeaponActor);
-    }
-
     if(bHoldingKeyFire && WeaponActor && WeaponActor->IsAutomatic())
     {
         if(CanFire())
         {
             PlayFireMontage();
 
-
+            // Automatic Shot
         }
     }
     else if(bHoldingKeyFire && WeaponActor && !WeaponActor->IsAutomatic())
@@ -208,6 +238,28 @@ void ACharacterBase::Tick(float DeltaTime)
             {
                 PlayFireMontage();
                 LastFireTime = GetGameTimeSinceCreation();
+            }
+        }
+        bHoldingKeyFire = false;
+    }
+
+    if(bHoldingKeyAim && CanAim())
+    {
+        bAiming = true;
+        if (!GetCharacterMovement()->IsCrouching())
+        {
+            GetCharacterMovement()->MaxWalkSpeed = SpeedAiming;
+        }
+    }
+    else
+    {
+        if(bAiming)
+        {
+            bAiming = false;
+
+            if(!GetCharacterMovement()->IsCrouching())
+            {
+                GetCharacterMovement()->MaxWalkSpeed = SpeedWalking;
             }
         }
     }
@@ -293,12 +345,13 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAction("Crouch", IE_Pressed, this, &ACharacterBase::ToggleCrouch);
     PlayerInputComponent->BindAction("Crouch", IE_Released, this, &ACharacterBase::ToggleCrouch);
 
-    PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ACharacterBase::ToggleAim);
-    PlayerInputComponent->BindAction("Aim", IE_Released, this, &ACharacterBase::ToggleAim);
+    PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ACharacterBase::PressAim);
+    PlayerInputComponent->BindAction("Aim", IE_Released, this, &ACharacterBase::ReleaseAim);
     
     PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ACharacterBase::PressFire);
     PlayerInputComponent->BindAction("Fire", IE_Released, this, &ACharacterBase::ReleaseFire);
 
+    PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ACharacterBase::Reload);
 
     PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
     PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
@@ -318,6 +371,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     FInputActionKeyMapping crouchKey("Crouch", EKeys::LeftControl, 0, 0, 0, 0);
     FInputActionKeyMapping aimKey("Aim", EKeys::RightMouseButton, 0, 0, 0, 0);
     FInputActionKeyMapping fireKey("Fire", EKeys::LeftMouseButton, 0, 0, 0, 0);
+    FInputActionKeyMapping reloadKey("Reload", EKeys::R, 0, 0, 0, 0);
 
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddAxisMapping(forwardKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddAxisMapping(backKey);
@@ -332,6 +386,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(crouchKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(aimKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(fireKey);
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(reloadKey);
 }
 
 bool ACharacterBase::CanRun()
@@ -363,31 +418,22 @@ AWeaponBase* ACharacterBase::GetCurrentWeapon()
 
 void ACharacterBase::ToggleAim()
 {
-    if(!IsAiming())
-    {
-        if (CanAim())
-        {
-            StartAiming();
-        }
-    }
-    else
-    {
-        bAiming = false;
-        // Soune Queue
+    bHoldingKeyAim = !bHoldingKeyAim;
+}
 
-        if(!GetCharacterMovement()->IsCrouching())
-        {
-            GetCharacterMovement()->MaxWalkSpeed = SpeedWalking;
-        }
-    }
+void ACharacterBase::PressAim()
+{
+    bHoldingKeyAim = true;
+}
+
+void ACharacterBase::ReleaseAim()
+{
+    bHoldingKeyAim = false;
 }
 
 void ACharacterBase::StartAiming()
 {
-   if(!GetCharacterMovement()->IsCrouching())
-   {
-       GetCharacterMovement()->MaxWalkSpeed = SpeedAiming;
-   }
+
    bAiming = true;
 
    // Sound Que
@@ -447,5 +493,35 @@ void ACharacterBase::NewWeapon()
     WeaponActor->SetOwner(this);
     WeaponActor->SetInstigator(this);
     WeaponActor->AttachToComponent(MeshArms, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true), TEXT("SOCKET_Weapon"));
+}
+
+void ACharacterBase::Reload()
+{
+    PrintLine();
+
+    if(!CanReload())
+    {
+        return;
+    }
+
+    UAnimMontage* reloadMontage = (bWeaponEmpty == true) ? MontageReloadEmpty : MontageReload;
+    verifyf(reloadMontage, L"Reload Montage is null");
+
+    bPlayingMontageReloading = true;
+
+    PrintLine();
+
+    MeshArms->GetAnimInstance()->Montage_Play(reloadMontage);
+
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &ACharacterBase::FuncToExecOnAnimBlendOut);
+    MeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, reloadMontage);
+
+    WeaponActor->OnReload();
+}
+
+void ACharacterBase::FuncToExecOnAnimBlendOut(UAnimMontage* animMOntage, bool bInterrupted)
+{
+    bPlayingMontageReloading = false;
 }
 

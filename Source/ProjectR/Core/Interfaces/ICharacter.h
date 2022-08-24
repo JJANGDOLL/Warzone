@@ -27,4 +27,5 @@ public:
 	virtual bool IsRunning() = 0;
 	virtual bool CanAim() = 0;
 	virtual bool CanFire() = 0;
+	virtual bool CanReload() = 0;
 };

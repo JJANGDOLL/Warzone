@@ -30,6 +30,9 @@ public:
 
 	bool CanFire() override;
 
+
+	bool CanReload() override;
+
 public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
@@ -117,7 +120,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void ToggleAim();
 	
+	void PressAim();
+	void ReleaseAim();
+
 	void StartAiming();
+
+	bool bHoldingKeyAim;
 
 private:
 	void DoRun();
@@ -137,4 +145,16 @@ public:
 
 	UAnimMontage* MontageFire;
 	float LastFireTime;
+
+	bool bHolstered = false;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void Reload();
+
+	bool bWeaponEmpty;
+	UAnimMontage* MontageReload;
+	UAnimMontage* MontageReloadEmpty;
+
+	void FuncToExecOnAnimBlendOut(UAnimMontage* animMOntage, bool bInterrupted);
 };

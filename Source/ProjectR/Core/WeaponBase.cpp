@@ -25,10 +25,10 @@ void AWeaponBase::OnFire()
     AmmunitionCurrent = FMath::Clamp(AmmunitionCurrent - 1, 0, AmmunitionMax);
 
     verifyf(ParticleMuzzleFlash, L"Muzzle Flash Null");
-    for(const auto& n : MeshWeapon->GetAllSocketNames())
-    {
-        Logger::Log(n.ToString());
-    }
+//     for(const auto& n : MeshWeapon->GetAllSocketNames())
+//     {
+//         Logger::Log(n.ToString());
+//     }
 //     UGameplayStatics::SpawnEmitterAttached(ParticleMuzzleFlash, MeshWeapon, TEXT("SOCKET_Muzzle"), FVector::ZeroVector);
     UGameplayStatics::SpawnEmitterAttached(ParticleMuzzleFlash, MeshWeapon, TEXT("SOCKET_Muzzle"), FVector::ZeroVector, FRotator(0.f, 90.f, 0.f));
 //     UGameplayStatics::SpawnEmitterAttached(ParticleMuzzleFlash, MeshWeapon, "");
