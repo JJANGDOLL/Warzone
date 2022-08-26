@@ -24,7 +24,6 @@ void AHandgunCharacter::BeginPlay()
     WeaponActor->SetInstigator(this);
     WeaponActor->AttachToComponent(MeshArms, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, EAttachmentRule::SnapToTarget, true),TEXT("SOCKET_Weapon"));
     
-
     AAIController* aiController = GetWorld()->SpawnActor<AAIController>(AAIController::StaticClass(), FTransform::FTransform());
     aiController->Possess(this);
 }

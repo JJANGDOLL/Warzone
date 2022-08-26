@@ -33,6 +33,18 @@ public:
 
 	bool CanReload() override;
 
+
+	bool CanInspect() override;
+
+
+	void PossessedBy(AController* NewController) override;
+
+
+	bool CanHolster() override;
+
+
+	bool IsHolstered() override;
+
 public:
 	virtual void OnConstruction(const FTransform& Transform) override;
 
@@ -106,6 +118,7 @@ protected:
 	AWeaponBase* WeaponActor;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	AWeaponBase* GetCurrentWeapon();
 
 
@@ -156,5 +169,26 @@ public:
 	UAnimMontage* MontageReload;
 	UAnimMontage* MontageReloadEmpty;
 
-	void FuncToExecOnAnimBlendOut(UAnimMontage* animMOntage, bool bInterrupted);
+	void OnReloadBlendOut(UAnimMontage* animMOntage, bool bInterrupted);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void Inspect();
+
+	UAnimMontage* MontageInspect;
+    void OnInspectBlendOut(UAnimMontage* animMOntage, bool bInterrupted);
+
+public:
+	UFUNCTION(BlueprintCallable)
+	void ToggleHolster();
+
+	void Holster();
+	void Unholster();
+
+	UAnimMontage* MontageHolster;
+    UAnimMontage* MontageUnholster;
+	bool bPlayingMontageHolstering;
+
+    void OnHolsterBlendOut(UAnimMontage* animMOntage, bool bInterrupted);
+    void OnUnholsterBlendOut(UAnimMontage* animMOntage, bool bInterrupted);
 };

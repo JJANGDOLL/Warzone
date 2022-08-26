@@ -91,9 +91,13 @@ ACharacterBase::ACharacterBase()
     Helpers::GetAsset(&MontageFire, TEXT("AnimMontage'/Game/AnimatedLowPolyWeapons/Art/Characters/Animations/Handguns/AM_FP_PCH_Handgun_Fire.AM_FP_PCH_Handgun_Fire'"));
     Helpers::GetAsset(&MontageReload, TEXT("AnimMontage'/Game/AnimatedLowPolyWeapons/Art/Characters/Animations/Handguns/AM_FP_PCH_Handgun_Reload.AM_FP_PCH_Handgun_Reload'"));
     Helpers::GetAsset(&MontageReloadEmpty, TEXT("AnimMontage'/Game/AnimatedLowPolyWeapons/Art/Characters/Animations/Handguns/AM_FP_PCH_Handgun_Reload_Empty.AM_FP_PCH_Handgun_Reload_Empty'"));
+    Helpers::GetAsset(&MontageInspect, TEXT("AnimMontage'/Game/AnimatedLowPolyWeapons/Art/Characters/Animations/Handguns/AM_FP_PCH_Handgun_Inspect.AM_FP_PCH_Handgun_Inspect'"));
+    Helpers::GetAsset(&MontageHolster, TEXT("AnimMontage'/Game/AnimatedLowPolyWeapons/Art/Characters/Animations/Handguns/AM_FP_PCH_Handgun_Holster_AB.AM_FP_PCH_Handgun_Holster_AB'"));
+    Helpers::GetAsset(&MontageUnholster, TEXT("AnimMontage'/Game/AnimatedLowPolyWeapons/Art/Characters/Animations/Handguns/AM_FP_PCH_Handgun_Unholster_AB.AM_FP_PCH_Handgun_Unholster_AB'"));
 
     bPlayingMontageInspecting = false;
     bPlayingMontageReloading = false;
+    bPlayingMontageHolstering = false;
 
     bHolstered = false;
     bRunning = false;
@@ -118,7 +122,7 @@ bool ACharacterBase::IsRunning()
 
 bool ACharacterBase::CanAim()
 {
-    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading;
+    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading && !bPlayingMontageHolstering;
 }
 
 bool ACharacterBase::CanFire()
@@ -130,12 +134,43 @@ bool ACharacterBase::CanFire()
 //     Logger::Log(WeaponActor);
 //     Logger::Log(WeaponActor->GetAmmunitionCurrent());
 
-    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading && !bRunning && WeaponActor && (WeaponActor->GetAmmunitionCurrent() > 0);
+    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading && !bPlayingMontageHolstering && !bRunning && WeaponActor && (WeaponActor->GetAmmunitionCurrent() > 0);
 }
 
 bool ACharacterBase::CanReload()
 {
-    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading;
+    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading && !bPlayingMontageHolstering;
+}
+
+bool ACharacterBase::CanInspect()
+{
+    return !bHolstered && !bPlayingMontageInspecting && !bPlayingMontageReloading && !bPlayingMontageHolstering;
+}
+
+void ACharacterBase::PossessedBy(AController* NewController)
+{
+    Super::PossessedBy(NewController);
+
+    if (!WeaponActor)
+    {
+        NewWeapon();
+    }
+
+    
+    if (IsPlayerControlled())
+    {
+        bDebug = true;
+    }
+}
+
+bool ACharacterBase::CanHolster()
+{
+    return !bPlayingMontageReloading && !bPlayingMontageInspecting && !bPlayingMontageHolstering;
+}
+
+bool ACharacterBase::IsHolstered()
+{
+    return bHolstered;
 }
 
 void ACharacterBase::OnConstruction(const FTransform& Transform)
@@ -180,7 +215,6 @@ void ACharacterBase::BeginPlay()
 
     verifyf(CameraComp, L"Camera component null");
 
-    NewWeapon();
 }
 
 // Called every frame
@@ -260,6 +294,21 @@ void ACharacterBase::Tick(float DeltaTime)
             if(!GetCharacterMovement()->IsCrouching())
             {
                 GetCharacterMovement()->MaxWalkSpeed = SpeedWalking;
+            }
+        }
+    }
+
+    if (bPlayingMontageHolstering)
+    {
+        if (MeshArms->GetAnimInstance()->Montage_GetPosition(MontageHolster) > 0.6f)
+        {
+            bPlayingMontageHolstering = false;
+            bHolstered = true;
+
+            MeshArms->SetHiddenInGame(true);
+            if (WeaponActor)
+            {
+                WeaponActor->SetHidden(true);
             }
         }
     }
@@ -353,10 +402,12 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
     PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ACharacterBase::Reload);
 
+    PlayerInputComponent->BindAction("Inspect", IE_Pressed, this, &ACharacterBase::Inspect);
+
+    PlayerInputComponent->BindAction("Holster", IE_Pressed, this, &ACharacterBase::ToggleHolster);
+
     PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
     PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
-
-
 
     FInputAxisKeyMapping forwardKey("Forward", EKeys::W, 1.f);
     FInputAxisKeyMapping backKey("Back", EKeys::S, -1.f);
@@ -372,6 +423,8 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     FInputActionKeyMapping aimKey("Aim", EKeys::RightMouseButton, 0, 0, 0, 0);
     FInputActionKeyMapping fireKey("Fire", EKeys::LeftMouseButton, 0, 0, 0, 0);
     FInputActionKeyMapping reloadKey("Reload", EKeys::R, 0, 0, 0, 0);
+    FInputActionKeyMapping inspectKey("Inspect", EKeys::T, 0, 0, 0, 0);
+    FInputActionKeyMapping holsterKey("Holster", EKeys::G, 0, 0, 0, 0);
 
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddAxisMapping(forwardKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddAxisMapping(backKey);
@@ -387,6 +440,8 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(aimKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(fireKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(reloadKey);
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(inspectKey);
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(holsterKey);
 }
 
 bool ACharacterBase::CanRun()
@@ -497,8 +552,6 @@ void ACharacterBase::NewWeapon()
 
 void ACharacterBase::Reload()
 {
-    PrintLine();
-
     if(!CanReload())
     {
         return;
@@ -509,19 +562,117 @@ void ACharacterBase::Reload()
 
     bPlayingMontageReloading = true;
 
-    PrintLine();
-
     MeshArms->GetAnimInstance()->Montage_Play(reloadMontage);
 
     FOnMontageEnded BlendOutDele;
-    BlendOutDele.BindUObject(this, &ACharacterBase::FuncToExecOnAnimBlendOut);
+    BlendOutDele.BindUObject(this, &ACharacterBase::OnReloadBlendOut);
     MeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, reloadMontage);
 
     WeaponActor->OnReload();
 }
 
-void ACharacterBase::FuncToExecOnAnimBlendOut(UAnimMontage* animMOntage, bool bInterrupted)
+void ACharacterBase::OnReloadBlendOut(UAnimMontage* animMOntage, bool bInterrupted)
 {
     bPlayingMontageReloading = false;
+}
+
+void ACharacterBase::Inspect()
+{
+    if (!CanInspect())
+        return;
+
+    verifyf(MontageInspect, L"Inspect Montage is null");
+
+    bPlayingMontageInspecting = true;
+
+    MeshArms->GetAnimInstance()->Montage_Play(MontageInspect);
+
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &ACharacterBase::OnInspectBlendOut);
+    MeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, MontageInspect);
+}
+
+void ACharacterBase::OnInspectBlendOut(UAnimMontage* animMOntage, bool bInterrupted)
+{
+    bPlayingMontageInspecting = false;
+}
+
+void ACharacterBase::ToggleHolster()
+{
+
+    if (bDebug)
+    {
+        PrintLine();
+        Logger::Log(bPlayingMontageHolstering);
+        Logger::Log(bHolstered);
+
+    }
+
+    if (!CanHolster())
+        return;
+
+    bHolstered ? Unholster() : Holster();
+}
+
+void ACharacterBase::Holster()
+{
+
+    if (bDebug)
+        PrintLine();
+
+    bPlayingMontageHolstering = true;
+
+    verifyf(MontageHolster, L"Montage Holster is null");
+
+    int8 newNotifyIdx = MontageHolster->Notifies.Add(FAnimNotifyEvent());
+    FAnimNotifyEvent& newEvent = MontageHolster->Notifies[newNotifyIdx];
+
+    newEvent.NotifyName = FName(TEXT("CustomNotifyName"));
+    newEvent.TriggerTimeOffset = 0.6f;
+
+    MeshArms->GetAnimInstance()->Montage_Play(MontageHolster);
+
+//     FOnMontageEnded BlendOutDele;
+//     BlendOutDele.BindUObject(this, &ACharacterBase::OnHolsterBlendOut);
+//     MeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, MontageHolster);
+}
+
+void ACharacterBase::Unholster()
+{
+    if (bDebug)
+        PrintLine();
+
+    bPlayingMontageHolstering = true;
+
+    verifyf(MontageUnholster, L"Montage unholster is null");
+
+    WeaponActor->SetActorHiddenInGame(false);
+
+    MeshArms->SetHiddenInGame(false);
+    MeshArms->GetAnimInstance()->Montage_Play(MontageUnholster);
+
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &ACharacterBase::OnUnholsterBlendOut);
+    MeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, MontageUnholster);
+}
+
+void ACharacterBase::OnHolsterBlendOut(UAnimMontage* animMOntage, bool bInterrupted)
+{
+    if (bDebug)
+        PrintLine();
+
+    bHolstered = true;
+    bPlayingMontageHolstering = false;
+    MeshArms->SetHiddenInGame(true);
+    WeaponActor->SetActorHiddenInGame(true);
+}
+
+void ACharacterBase::OnUnholsterBlendOut(UAnimMontage* animMOntage, bool bInterrupted)
+{
+    if (bDebug)
+        PrintLine();
+
+    bHolstered = false;
+    bPlayingMontageHolstering = false;
 }
 

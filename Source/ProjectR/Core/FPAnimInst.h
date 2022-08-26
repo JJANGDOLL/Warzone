@@ -24,6 +24,9 @@ protected:
     UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "CProp | Status")
     bool bRunning;
 
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "CProp | Status")
+	bool bHolstered;
+
 	UPROPERTY(BlueprintReadOnly, VisibleDefaultsOnly, Category = "CProp | Weapon")
 	class AWeaponBase* weaponBase;
 

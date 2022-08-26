@@ -38,6 +38,8 @@ void UFPAnimInst::NativeUpdateAnimation(float DeltaSeconds)
         weaponBase = characterBase->GetCurrentWeapon();
 
     CheckNull(weaponBase);
+
+    bHolstered = characterBase->IsHolstered();
 }
 
 void UFPAnimInst::NativeBeginPlay()
