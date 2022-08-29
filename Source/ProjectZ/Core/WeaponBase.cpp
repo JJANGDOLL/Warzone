@@ -9,6 +9,7 @@
 #include "Engine/SkeletalMesh.h"
 #include "Components/MeshComponent.h"
 #include "Kismet/DataTableFunctionLibrary.h"
+#include "Components/PointLightComponent.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -45,6 +46,10 @@ AWeaponBase::AWeaponBase()
 	TryUpdateAttachmentIronsightsLoadAssetConstruct();
 	SettingsAnimationLoadAssetConstruct();
 	UpdateAttachmentScopeLoadAssetConstruct();
+    UpdateAttachmentMazzuleLoadAssetConstruct();
+	UpdateAttachmentLaserLoadAssetConstruct();
+	UpdateAttachmentGripLoadAssetConstruct();
+	UpdateSkinLoadAssetConstruct();
 }
 
 
@@ -75,6 +80,17 @@ void AWeaponBase::OnConstruction(const FTransform& Transform)
 	TryUpdateAttachmentIronsights();
 	SettingsAnimation();
 	UpdateAttachmentScope();
+	UpdateAttachmentMazzule();
+	UpdateAttachmentLaser();
+	UpdateAttachmentGrip();
+	UpdateSkin();
+}
+
+void AWeaponBase::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
+{
+    Super::PostEditChangeProperty(PropertyChangedEvent);
+
+	OnConstruction(this->GetTransform());
 }
 
 void AWeaponBase::UpdateSocketAttachments()
@@ -107,6 +123,11 @@ void AWeaponBase::CacheWeaponPreset()
 	if (!findPreset)
 		return;
 	WeaponPreset = *findPreset;
+	WeaponPresetOverride.RowHandleSkin.DataTable = findPreset->RowHandleSkin.DataTable;
+	WeaponPresetOverride.Attachments.RowHandleMeshScope.DataTable = findPreset->Attachments.RowHandleMeshScope.DataTable;
+    WeaponPresetOverride.Attachments.RowHandleMeshMuzzle.DataTable = findPreset->Attachments.RowHandleMeshMuzzle.DataTable;
+    WeaponPresetOverride.Attachments.RowHandleMeshGrip.DataTable = findPreset->Attachments.RowHandleMeshGrip.DataTable;
+    WeaponPresetOverride.Attachments.RowHandleMeshLaser.DataTable = findPreset->Attachments.RowHandleMeshLaser.DataTable;
 }
 
 void AWeaponBase::CacheWeaponPresetLoadAssetConstruct()
@@ -115,7 +136,7 @@ void AWeaponBase::CacheWeaponPresetLoadAssetConstruct()
 	Helpers::GetAsset(&weaponPresetDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Presets.DT_WEP_CPP_Presets'"));
 	verifyf(weaponPresetDT, L"WeaopnPresetDT invalid asset");
 	WeaponPresetRowHandle.DataTable = weaponPresetDT;
-	WeaponPresetRowHandle.RowName = weaponPresetDT->GetRowNames()[0];
+ 	WeaponPresetRowHandle.RowName = weaponPresetDT->GetRowNames()[0];
 
 	CacheWeaponPreset();
 }
@@ -126,6 +147,10 @@ void AWeaponBase::CacheWeaponInformation()
 	if (!findInfo)
 		return;
 	WeaponInformation = *findInfo;
+	ScopeSettingsRowHandle.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsScope;
+	MuzzleSettingsRowHandle.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsMuzzle;
+	LaserSettingsRowHandle.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsLaser;
+	GripSettingsRowHandle.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsGrip;
 }
 
 void AWeaponBase::CacheWeaponInformationLoadAssetConstruct()
@@ -141,7 +166,7 @@ void AWeaponBase::CacheWeaponInformationLoadAssetConstruct()
 
 void AWeaponBase::TryUpdateAttachmentMagazine()
 {
-	FSMagazine* findMag = WeaponMagazineRowHandle.GetRow<FSMagazine>("");
+	FSMagazine* findMag = MagazineSettingRowHandle.GetRow<FSMagazine>("");
 	if (!findMag)
 		return;
 	MagazineSettings = *findMag;
@@ -153,17 +178,20 @@ void AWeaponBase::TryUpdateAttachmentMagazineLoadAssetConstruct()
     UDataTable* weaponMagazineDT;
     Helpers::GetAsset(&weaponMagazineDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Magazines.DT_WEP_CPP_Magazines'"));
 	verifyf(weaponMagazineDT, L"WeaponMagDT invalid asset");
-	WeaponMagazineRowHandle.DataTable = weaponMagazineDT;
-	WeaponMagazineRowHandle.RowName = weaponMagazineDT->GetRowNames()[0];
+	MagazineSettingRowHandle.DataTable = weaponMagazineDT;
+	MagazineSettingRowHandle.RowName = TEXT("Hidden");
 
 	TryUpdateAttachmentMagazine();
 }
 
 void AWeaponBase::TryUpdateAttachmentIronsights()
 {
-	ShowAttachmentIronsights = (WeaponIronsightRowHandle.RowName != TEXT("Hidden"));
+	if (!IronsightSettingsRowHandle.DataTable)
+		return;
 
-	FSIronsights* findIron = WeaponIronsightRowHandle.GetRow<FSIronsights>("");
+	ShowAttachmentIronsights = !(IronsightSettingsRowHandle.RowName == TEXT("Hidden"));
+
+	FSIronsights* findIron = IronsightSettingsRowHandle.GetRow<FSIronsights>("");
 	if (!findIron)
 		return;
 	IronsightSettings = *findIron;
@@ -175,8 +203,8 @@ void AWeaponBase::TryUpdateAttachmentIronsightsLoadAssetConstruct()
     UDataTable* weaponIronsightDT;
     Helpers::GetAsset(&weaponIronsightDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Ironsights.DT_WEP_CPP_Ironsights'"));
     verifyf(weaponIronsightDT, L"WeaponIronDT invalid asset");
-	WeaponIronsightRowHandle.DataTable = weaponIronsightDT;
-	WeaponIronsightRowHandle.RowName = weaponIronsightDT->GetRowNames()[0];
+	IronsightSettingsRowHandle.DataTable = weaponIronsightDT;
+	IronsightSettingsRowHandle.RowName = weaponIronsightDT->GetRowNames()[1];
 
 	TryUpdateAttachmentIronsights();
 }
@@ -199,8 +227,8 @@ void AWeaponBase::SettingsAnimationLoadAssetConstruct()
 
 void AWeaponBase::UpdateAttachmentScope()
 {
-// 	if (TryUpdateAttachmentScope(WeaponPresetOverride))
-// 		return;
+	if (bOverridePreset && TryUpdateAttachmentScope(WeaponPresetOverride))
+		return;
 
 	if (TryUpdateAttachmentScope(WeaponPreset))
 		return;
@@ -210,8 +238,8 @@ void AWeaponBase::UpdateAttachmentScope()
 
 void AWeaponBase::UpdateAttachmentScopeLoadAssetConstruct()
 {
-	ScopeSettingsRowHandle.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsScope;
-	ScopeSettingsRowHandle.RowName = WeaponPreset.Attachments.RowHandleMeshScope.RowName;
+// 	ScopeSettingsRowHandle.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsScope;
+// 	ScopeSettingsRowHandle.RowName = WeaponPreset.Attachments.RowHandleMeshScope.RowName;
 
 	UpdateAttachmentScope();
 }
@@ -230,7 +258,6 @@ bool AWeaponBase::TryUpdateAttachmentScope(FSPreset& Preset)
 	FSScope* findScope = rowHandleSettings.GetRow<FSScope>("");
 	if (!findScope)
 	{
-		Logger::Log(Preset.Attachments.RowHandleMeshScope.RowName.ToString());
 		if (Preset.Attachments.RowHandleMeshScope.RowName != TEXT("Hidden"))
 			return false;
 
@@ -244,6 +271,8 @@ bool AWeaponBase::TryUpdateAttachmentScope(FSPreset& Preset)
 
 	FDataTableRowHandle rowHandleMesh;
 	rowHandleMesh = Preset.Attachments.RowHandleMeshScope;
+
+	OnSwapAttachmentScope(rowHandleMesh, rowHandleSettings);
 
 	return true;
 }
@@ -259,5 +288,356 @@ void AWeaponBase::GetIronsightsScopeSettings()
 
 	ScopeSettings = *findScope;
 	ScopeSettingsRowHandle = IronsightSettings.RowHandleSettingsScope;
+}
+
+void AWeaponBase::OnSwapAttachmentScope(FDataTableRowHandle Mesh, FDataTableRowHandle Settings)
+{
+	SetScopeMeshRowHandle(Mesh);
+	SetScopeSettingsRowHandle(Settings);
+}
+
+void AWeaponBase::SetScopeMeshRowHandle(FDataTableRowHandle Mesh)
+{
+	ScopeMeshRowHandle = Mesh;
+	if (!ScopeMeshRowHandle.DataTable)
+		return;
+
+	SMeshScope->SetStaticMesh(ScopeMeshRowHandle.GetRow<FSMesh>("")->Mesh);
+	ShowAttachmentIronsights = (ScopeMeshRowHandle.RowName != TEXT("Hidden"));
+}
+
+void AWeaponBase::SetScopeSettingsRowHandle(FDataTableRowHandle Settings)
+{
+	ScopeSettingsRowHandle = Settings;
+	if (!ScopeSettingsRowHandle.DataTable)
+		return;
+
+	FSScope* findScopeSet = ScopeSettingsRowHandle.GetRow<FSScope>("");
+	if (!findScopeSet)
+		return;
+
+	ScopeSettings = *findScopeSet;
+}
+
+void AWeaponBase::UpdateAttachmentMazzule()
+{
+	if (bOverridePreset && TryUpdateAttachmentMuzzle(WeaponPresetOverride))
+		return;
+
+	if (TryUpdateAttachmentMuzzle(WeaponPreset))
+		return;
+}
+
+void AWeaponBase::UpdateAttachmentMazzuleLoadAssetConstruct()
+{
+	UpdateAttachmentMazzule();
+}
+
+bool AWeaponBase::TryUpdateAttachmentMuzzle(FSPreset& Preset)
+{
+	if (!WeaponInformation.SettingsAttachments.DataTableSettingsMuzzle)
+		return false;
+
+	FSMuzzle* findMuzzle = WeaponInformation.SettingsAttachments.DataTableSettingsMuzzle->FindRow<FSMuzzle>(Preset.Attachments.RowHandleMeshMuzzle.RowName, "");
+	if (!findMuzzle)
+	{
+		MuzzleSettingsRowHandle = FDataTableRowHandle();
+		MuzzleMeshRowHandle = FDataTableRowHandle();
+		MuzzleSettings = FSMuzzle();
+		return false;
+	}
+	
+	FDataTableRowHandle rowHandleSettings;
+	rowHandleSettings.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsMuzzle;
+	rowHandleSettings.RowName = Preset.Attachments.RowHandleMeshMuzzle.RowName;
+
+	FDataTableRowHandle rowHandleMesh;
+	rowHandleMesh = Preset.Attachments.RowHandleMeshMuzzle;
+
+	OnSwapAttachmentMuzzle(rowHandleMesh, rowHandleSettings);
+
+	return true;
+}
+
+void AWeaponBase::OnSwapAttachmentMuzzle(FDataTableRowHandle Mesh, FDataTableRowHandle Settings)
+{
+	SetMuzzleMeshRowHandle(Mesh);
+	SetMuzzleSettingsRowHandle(Settings);
+}
+
+void AWeaponBase::SetMuzzleMeshRowHandle(FDataTableRowHandle Mesh)
+{
+	MuzzleMeshRowHandle = Mesh;
+	if (!MuzzleMeshRowHandle.DataTable)
+		return;
+
+	SMeshMuzzle->SetStaticMesh(MuzzleMeshRowHandle.GetRow<FSMesh>("")->Mesh);
+}
+
+void AWeaponBase::SetMuzzleSettingsRowHandle(FDataTableRowHandle Settings)
+{
+	MuzzleSettingsRowHandle = Settings;
+	if (!MuzzleSettingsRowHandle.DataTable)
+		return;
+
+	FSMuzzle* findMuzzleSet = MuzzleSettingsRowHandle.GetRow<FSMuzzle>("");
+	if (!findMuzzleSet)
+		return;
+
+	MuzzleSettings = *findMuzzleSet;
+}
+
+void AWeaponBase::UpdateAttachmentLaser()
+{
+	if (bOverridePreset && TryUpdateAttachmentLaser(WeaponPresetOverride))
+		return;
+
+	if (TryUpdateAttachmentLaser(WeaponPreset))
+		return;
+}
+
+void AWeaponBase::UpdateAttachmentLaserLoadAssetConstruct()
+{
+	UpdateAttachmentLaser();
+}
+
+bool AWeaponBase::TryUpdateAttachmentLaser(FSPreset& Preset)
+{
+	if (!WeaponInformation.SettingsAttachments.DataTableSettingsLaser)
+		return false;
+
+	FDataTableRowHandle rowHandleSettings;
+	rowHandleSettings.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsLaser;
+	rowHandleSettings.RowName = Preset.Attachments.RowHandleMeshLaser.RowName;
+
+	if (rowHandleSettings.GetRow<FSLaser>("") == nullptr)
+	{ 
+		if (Preset.Attachments.RowHandleMeshLaser.RowName != TEXT("Hidden"))
+			return false;
+	}
+
+	if (!Preset.Attachments.RowHandleMeshLaser.DataTable)
+		return false;
+
+	if (Preset.Attachments.RowHandleMeshLaser.GetRow<FSMesh>("") == nullptr)
+		return false;
+
+	FDataTableRowHandle rowHandleMesh;
+	rowHandleMesh = Preset.Attachments.RowHandleMeshLaser;
+
+	OnSwapAttachmentLaser(rowHandleMesh, rowHandleSettings);
+
+	return true;
+}
+
+void AWeaponBase::OnSwapAttachmentLaser(FDataTableRowHandle Mesh, FDataTableRowHandle Settings)
+{
+	SetLaserMeshRowHandle(Mesh);
+	SetLaserSettingsRowHandle(Settings);
+}
+
+void AWeaponBase::SetLaserSettingsRowHandle(FDataTableRowHandle Settings)
+{
+	LaserSettingsRowHandle = Settings;
+
+	if (!LaserSettingsRowHandle.DataTable)
+		return;
+
+	FSLaser* findLaser = LaserSettingsRowHandle.GetRow<FSLaser>("");
+	if (!findLaser)
+		return;
+
+	LaserSettings = *findLaser;
+}
+
+void AWeaponBase::SetLaserMeshRowHandle(FDataTableRowHandle Mesh)
+{
+	LaserMeshRowHandle = Mesh;
+	if (!LaserMeshRowHandle.DataTable)
+		return;
+
+	SMeshLaser->SetStaticMesh(LaserMeshRowHandle.GetRow<FSMesh>("")->Mesh);
+}
+
+void AWeaponBase::UpdateAttachmentGrip()
+{
+	if (bOverridePreset && TryUpdateAttachmentGrip(WeaponPresetOverride))
+		return;
+
+	if (TryUpdateAttachmentGrip(WeaponPreset))
+		return;
+}
+
+void AWeaponBase::UpdateAttachmentGripLoadAssetConstruct()
+{
+	UpdateAttachmentGrip();
+}
+
+bool AWeaponBase::TryUpdateAttachmentGrip(FSPreset& Preset)
+{
+	if (!WeaponInformation.SettingsAttachments.DataTableSettingsGrip)
+		return false;
+
+	FDataTableRowHandle rowHandleSettings;
+	rowHandleSettings.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsGrip;
+	rowHandleSettings.RowName = Preset.Attachments.RowHandleMeshGrip.RowName;
+
+
+	if (rowHandleSettings.GetRow<FSGrip>("") == nullptr)
+	{
+		if (Preset.Attachments.RowHandleMeshGrip.RowName != TEXT("Hidden"))
+			return false;
+	}
+
+	if (!Preset.Attachments.RowHandleMeshGrip.DataTable)
+		return false;
+
+	if (Preset.Attachments.RowHandleMeshGrip.GetRow<FSMesh>("") == nullptr)
+		return false;
+
+	FDataTableRowHandle rowHandleMesh;
+	rowHandleMesh = Preset.Attachments.RowHandleMeshGrip;
+
+	OnSwapattachmentGrip(rowHandleMesh, rowHandleSettings);
+
+	return true;
+}
+
+void AWeaponBase::OnSwapattachmentGrip(FDataTableRowHandle Mesh, FDataTableRowHandle Settings)
+{
+	SetGripSettingsRowHandle(Settings);
+	SetGripMeshRowHandle(Mesh);
+}
+
+void AWeaponBase::SetGripSettingsRowHandle(FDataTableRowHandle Settings)
+{
+	GripSettingsRowHandle = Settings;
+	if (!GripSettingsRowHandle.DataTable)
+		return;
+
+	FSGrip* findGrip = GripSettingsRowHandle.GetRow<FSGrip>("");
+	if (!findGrip)
+		return;
+
+	GripSettings = *findGrip;
+}
+
+void AWeaponBase::SetGripMeshRowHandle(FDataTableRowHandle Mesh)
+{
+	GripMeshRowHandle = Mesh;
+	if (!GripMeshRowHandle.DataTable)
+		return;
+
+	SMeshGrip->SetStaticMesh(GripMeshRowHandle.GetRow<FSMesh>("")->Mesh);
+}
+
+void AWeaponBase::UpdateSkin()
+{
+	if (bOverridePreset && TryUpdateSkin(WeaponPresetOverride))
+		return;
+
+	if (TryUpdateSkin(WeaponPreset))
+		return;
+}
+
+void AWeaponBase::UpdateSkinLoadAssetConstruct()
+{
+	UpdateSkin();
+}
+
+bool AWeaponBase::TryUpdateSkin(FSPreset& Preset)
+{
+	if (!Preset.RowHandleSkin.DataTable)
+		return false;
+
+	if (Preset.RowHandleSkin.GetRow<FSSkin>("") == nullptr)
+		return false;
+
+	FDataTableRowHandle rowHandle;
+	rowHandle = Preset.RowHandleSkin;
+
+	SetSkinRowHandle(rowHandle);
+
+	return true;
+}
+
+void AWeaponBase::SetSkinRowHandle(FDataTableRowHandle Skin)
+{
+	SkinRowHandle = Skin;
+
+	FSSkin* findSkin = SkinRowHandle.GetRow<FSSkin>("");
+	if (!findSkin)
+		return;
+
+	SkinSettings = *findSkin;
+
+	UpdateMaterialFromSkin();
+}
+
+void AWeaponBase::UpdateMaterialFromSkin()
+{
+	CacheNewVisualLaserSettings();
+
+	MapMaterialtoComponent(SMeshMagazine, SkinSettings.MaterialMapMagazine);
+    MapMaterialtoComponent(SMeshLaser, SkinSettings.MaterialMapLaser);
+    MapMaterialtoComponent(SMeshIronsight, SkinSettings.MaterialMapIronsights);
+    MapMaterialtoComponent(SMeshGrip, SkinSettings.MaterialMapGrip);
+    MapMaterialtoComponent(SMeshScope, SkinSettings.MaterialMapScope);
+    MapMaterialtoComponent(SMeshMuzzle, SkinSettings.MaterialMapMuzzle);
+    MapMaterialtoComponent(Weapon, SkinSettings.MaterialMapBody);
+}
+
+void AWeaponBase::CacheNewVisualLaserSettings()
+{
+	if (!SkinSettings.RowHandleSettingsLasersight.DataTable)
+		return;
+
+	FSLasersight* findLasersights = SkinSettings.RowHandleSettingsLasersight.GetRow<FSLasersight>("");
+	if (!findLasersights)
+		return;
+
+	LaserSightsSettings = *findLasersights;
+
+	if (!SkinSettings.RowHandleSettingsFlashlight.DataTable)
+		return;
+
+	FSFlashlight* findFlashlight = SkinSettings.RowHandleSettingsFlashlight.GetRow<FSFlashlight>("");
+	if (!findFlashlight)
+		return;
+
+	FlashlightSettings = *findFlashlight;
+}
+
+void AWeaponBase::MapMaterialtoComponent(UPrimitiveComponent* Component, TMap<FName, UMaterialInstanceConstant*> MaterialMap)
+{
+	for (auto& Elem : MaterialMap)
+	{
+		Component->SetMaterialByName(Elem.Key, Elem.Value);
+	}
+}
+
+void AWeaponBase::DebugAllComponents()
+{
+	if (!bDebugComponents)
+		return;
+
+
+
+}
+
+void AWeaponBase::OnSpawnAttachmentComponents()
+{
+	TrySpawnComponentMuzzleFlash();
+}
+
+void AWeaponBase::TrySpawnComponentMuzzleFlash()
+{
+	if (!MuzzleSettings.FlashLight)
+		return;
+
+	if (!LightPointMuzzleFlash)
+	{
+		AddComponent<UPointLightComponent>(TEXT("Sample"), false, FTransform::FTransform());
+	}
 }
 

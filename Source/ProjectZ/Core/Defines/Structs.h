@@ -138,17 +138,11 @@ public:
 };
 
 USTRUCT(BlueprintType)
-struct FSSkins : public FTableRowBase
+struct FSSkin : public FTableRowBase
 {
     GENERATED_BODY()
 
 public:
-    FSSkins()
-    {
-        RowHandleSettingsLasersight.RowName = TEXT("Normal");
-        RowHandleSettingsFlashlight.RowName = TEXT("Normal");
-    }
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
         TMap<FName, UMaterialInstanceConstant*> MaterialMapBody;
 
@@ -615,4 +609,76 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     float AimedFieldOfViewViewmodel;
+};
+
+USTRUCT(BlueprintType)
+struct FSMuzzle : public FTableRowBase
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UParticleSystem* FireParticles;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class USoundCue* FireSoundCue;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool OverheatEnabled;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 OverheatShots;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UParticleSystem* OverheatParticles;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool FlashLight;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float FlashLightDuration;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector FlashLightRelativeLocation;
+};
+
+USTRUCT(BlueprintType)
+struct FSLaser : public FTableRowBase
+{
+    GENERATED_BODY()
+    
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool OffWhileAiming;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool OffWhileRunning;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool OffWhileLowered;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FVector RelativeLocation;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class USoundCue* ToggleSoundCue;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool Flashlight;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool Lasersight;
+};
+
+USTRUCT(BlueprintType)
+struct FSGrip : public FTableRowBase
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UAnimSequence* IdlePoseOverride;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UAnimSequence* AimPoseOverride;
 };

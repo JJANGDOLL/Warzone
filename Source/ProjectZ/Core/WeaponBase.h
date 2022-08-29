@@ -78,7 +78,10 @@ public:
 public:
 	void OnConstruction(const FTransform& Transform) override;
 
-// OnConstruction
+
+	void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+
+	// OnConstruction
 public:
 	void UpdateSocketAttachments();
 
@@ -101,18 +104,24 @@ public:
 	void CacheWeaponPresetLoadAssetConstruct();
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Datas", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Settings", meta = (AllowPrivateAccess = true))
 	FDataTableRowHandle WeaponPresetRowHandle;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	FSPreset WeaponPreset;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projz | Custom", meta = (AllowPrivateAccess = true))
+	FSPreset WeaponPresetOverride;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projz | Custom", meta = (AllowPrivateAccess = true))
+	bool bOverridePreset = false;
 
 public:
 	void CacheWeaponInformation();
 	void CacheWeaponInformationLoadAssetConstruct();
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Datas", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Settings", meta = (AllowPrivateAccess = true))
 	FDataTableRowHandle WeaponInfoRowHandle;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
@@ -123,8 +132,8 @@ public:
 	void TryUpdateAttachmentMagazineLoadAssetConstruct();
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Datas", meta = (AllowPrivateAccess = true))
-    FDataTableRowHandle WeaponMagazineRowHandle;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Settings", meta = (AllowPrivateAccess = true))
+    FDataTableRowHandle MagazineSettingRowHandle;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	FSMagazine MagazineSettings;
@@ -134,8 +143,8 @@ public:
 	void TryUpdateAttachmentIronsightsLoadAssetConstruct();
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Datas", meta = (AllowPrivateAccess = true))
-	FDataTableRowHandle WeaponIronsightRowHandle;
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Settings", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle IronsightSettingsRowHandle;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	FSIronsights IronsightSettings;
@@ -154,13 +163,104 @@ public:
     void UpdateAttachmentScopeLoadAssetConstruct();
 	bool TryUpdateAttachmentScope(FSPreset& Preset);
 	void GetIronsightsScopeSettings();
+	void OnSwapAttachmentScope(FDataTableRowHandle Mesh, FDataTableRowHandle Settings);
+	void SetScopeMeshRowHandle(FDataTableRowHandle Mesh);
+    void SetScopeSettingsRowHandle(FDataTableRowHandle Settings);
 
 public:
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Datas", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Settings", meta = (AllowPrivateAccess = true))
 	FDataTableRowHandle ScopeSettingsRowHandle;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	FSScope ScopeSettings;
 
-	FSPreset WeaponPresetOverride;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle ScopeMeshRowHandle;
+
+public:
+	void UpdateAttachmentMazzule();
+	void UpdateAttachmentMazzuleLoadAssetConstruct();
+	bool TryUpdateAttachmentMuzzle(FSPreset& Preset);
+	void OnSwapAttachmentMuzzle(FDataTableRowHandle Mesh, FDataTableRowHandle Settings);
+	void SetMuzzleMeshRowHandle(FDataTableRowHandle Mesh);
+	void SetMuzzleSettingsRowHandle(FDataTableRowHandle Settings);
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Settings", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle MuzzleSettingsRowHandle;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FSMuzzle MuzzleSettings;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle MuzzleMeshRowHandle;
+
+public:
+	void UpdateAttachmentLaser();
+	void UpdateAttachmentLaserLoadAssetConstruct();
+	bool TryUpdateAttachmentLaser(FSPreset& Preset);
+	void OnSwapAttachmentLaser(FDataTableRowHandle Mesh, FDataTableRowHandle Settings);
+	void SetLaserSettingsRowHandle(FDataTableRowHandle Settings);
+	void SetLaserMeshRowHandle(FDataTableRowHandle Mesh);
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Settings", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle LaserSettingsRowHandle;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FSLaser LaserSettings;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle LaserMeshRowHandle;
+
+public:
+	void UpdateAttachmentGrip();
+	void UpdateAttachmentGripLoadAssetConstruct();
+	bool TryUpdateAttachmentGrip(FSPreset& Preset);
+	void OnSwapattachmentGrip(FDataTableRowHandle Mesh, FDataTableRowHandle Settings);
+	void SetGripSettingsRowHandle(FDataTableRowHandle Settings);
+	void SetGripMeshRowHandle(FDataTableRowHandle Mesh);
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Settings", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle GripSettingsRowHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FSGrip GripSettings;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle GripMeshRowHandle;
+
+public:
+	void UpdateSkin();
+	void UpdateSkinLoadAssetConstruct();
+	bool TryUpdateSkin(FSPreset& Preset);
+	void SetSkinRowHandle(FDataTableRowHandle Skin);
+	void UpdateMaterialFromSkin();
+	void CacheNewVisualLaserSettings();
+	void MapMaterialtoComponent(class UPrimitiveComponent* Component, TMap<FName, class UMaterialInstanceConstant*> MaterialMap);
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Settings", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle SkinRowHandle;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FSSkin SkinSettings;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FSLasersight LaserSightsSettings;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FSFlashlight FlashlightSettings;
+
+public:
+	void DebugAllComponents();
+	virtual void OnSpawnAttachmentComponents() override;
+	void TrySpawnComponentMuzzleFlash();
+
+public:
+	bool bDebugComponents;
+
+	class UPointLightComponent* LightPointMuzzleFlash;
 };
+
