@@ -5,6 +5,8 @@
 #include "Materials/MaterialInstance.h"
 #include "Materials/MaterialInstanceConstant.h"
 #include "Core/Defines/Enums.h"
+#include "GameplayTagContainer.h"
+#include "Engine/CollisionProfile.h"
 #include "Structs.generated.h"
 
 USTRUCT(BlueprintType)
@@ -681,4 +683,206 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     class UAnimSequence* AimPoseOverride;
+};
+
+USTRUCT(BlueprintType)
+struct FSRecoilState
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UCurveVector* LocationCurve;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSSPringInterpVector LocationInterpolation;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float LocationMultiplier;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UCurveVector* RotationCurve;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSSPringInterpVector RotationInterpolation;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float RotationMultiplier;
+};
+
+USTRUCT(BlueprintType)
+struct FSRecoilStates
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSRecoilState RecoilStateStanding;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSRecoilState RecoilStateAiming;
+};
+
+USTRUCT(BlueprintType)
+struct FSRecoil
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSRecoilStates RecoilStatesViewmodel;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSRecoilStates RecoilStatesCamera;
+};
+
+USTRUCT(BlueprintType)
+struct FSWeaponSettings : public FTableRowBase
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool BoltAction;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool CycledReload;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool CanReloadFull;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool AutoReloadOnEmpty;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool AutoReloadOnEmptyFire;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool CanActionBoltWhileAiming;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    EFireMode FireMode;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float FireRate;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float FireRateEmpty;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 BurstCount;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float BurstTimeBetween;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float SpreadYaw;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float SpreadPitch;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float SpreadAimingMultiplier;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSRecoil RecoilProperties;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UCurveVector* SpreadCurve;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UForceFeedbackEffect* ForceFeedbackEffect;
+};
+
+USTRUCT(BlueprintType)
+struct FSGameAbility
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGameplayTagContainer TagsRequired;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGameplayTagContainer TagsBlocked;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGameplayTagContainer TagsAdded;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FGameplayTagContainer TagsRemoved;
+};
+
+USTRUCT(BlueprintType)
+struct FSAbilities : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FSGameAbility AbilityKnife;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityGrenade;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityReload;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityInspect;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityFire;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityFireEmpty;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityBolt;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityRun;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityHolster;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityAim;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityLowerWeapon;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityLean;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FSGameAbility AbilityRandomizeWeaponPreset;
+};
+
+USTRUCT(BlueprintType)
+struct FSPhysical : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FCollisionProfileName CollisionProfileName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool SimulatePhysics;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool CastShadow;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool Visible;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool HiddenInGame;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool ReceivesDecals;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool RenderCustomDepth;
 };

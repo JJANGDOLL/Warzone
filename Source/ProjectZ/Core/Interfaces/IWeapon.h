@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "Engine/DataTable.h"
 #include "IWeapon.generated.h"
 
 // This class does not need to be modified.
@@ -24,4 +25,6 @@ class PROJECTZ_API IIWeapon
 
 public:
 	virtual void OnSpawnAttachmentComponents() = 0;
+	virtual void OnChangeSettingsPhysicalAttachments(FDataTableRowHandle Value) = 0;
+	virtual void OnChangeSettingsPhysicalBody(FDataTableRowHandle Value) = 0;
 };

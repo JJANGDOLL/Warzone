@@ -11,3 +11,13 @@ enum class EAmmoType : uint8
     Sniper,
     Shotgun
 };
+
+UENUM(BlueprintType)
+enum class EFireMode : uint8
+{
+    Semi,
+    Automatic,
+    Burst,
+    BurstHold,
+    Safe
+};

@@ -10,6 +10,12 @@
 #include "Components/MeshComponent.h"
 #include "Kismet/DataTableFunctionLibrary.h"
 #include "Components/PointLightComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "Components/DecalComponent.h"
+#include "Kismet/KismetMaterialLibrary.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "GameFramework/Character.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -50,6 +56,8 @@ AWeaponBase::AWeaponBase()
 	UpdateAttachmentLaserLoadAssetConstruct();
 	UpdateAttachmentGripLoadAssetConstruct();
 	UpdateSkinLoadAssetConstruct();
+	DebugAllComponentsLoadAssetConstruct();
+	UpdateAllPhysicalSettingsLoadAssetConstruct();
 }
 
 
@@ -84,13 +92,18 @@ void AWeaponBase::OnConstruction(const FTransform& Transform)
 	UpdateAttachmentLaser();
 	UpdateAttachmentGrip();
 	UpdateSkin();
+	DebugAllComponents();
+    Logger::Log(RowHandlePhysicalAttachments.DataTable);
+	UpdateAllPhysicalSettings();
+    CacheWeaponSettings();
+	CacheCharacterAbilities();
 }
 
 void AWeaponBase::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
     Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	OnConstruction(this->GetTransform());
+// 	OnConstruction(this->GetTransform());
 }
 
 void AWeaponBase::UpdateSocketAttachments()
@@ -619,15 +632,38 @@ void AWeaponBase::MapMaterialtoComponent(UPrimitiveComponent* Component, TMap<FN
 void AWeaponBase::DebugAllComponents()
 {
 	if (!bDebugComponents)
+	{
 		return;
+	}
 
+	OnSpawnAttachmentComponents();
+	if (LightPointMuzzleFlash)
+		LightPointMuzzleFlash->SetVisibility(true);
 
+	if (LightSpotFlashlight)
+		LightSpotFlashlight->SetVisibility(true);
 
+	if (StaticMeshLasersightBeam)
+	{
+		StaticMeshLasersightBeam->SetVisibility(true);
+		StaticMeshLasersightBeam->SetWorldScale3D(FVector(20.f, 1.f, 1.f));
+	}
+}
+
+void AWeaponBase::DebugAllComponentsLoadAssetConstruct()
+{
+// 	Helpers::CreateActorComponent(this, &LightPointMuzzleFlash, TEXT("LightPointMuzzleFlash"));
 }
 
 void AWeaponBase::OnSpawnAttachmentComponents()
 {
-	TrySpawnComponentMuzzleFlash();
+	if (!bDebugComponents)
+		return;
+
+    TrySpawnComponentMuzzleFlash();
+	TrySpawnComponentFlashlight();
+	TrySpawnComponentsLasersight();
+	TrySpawnScopeRenderTarget();
 }
 
 void AWeaponBase::TrySpawnComponentMuzzleFlash()
@@ -637,7 +673,213 @@ void AWeaponBase::TrySpawnComponentMuzzleFlash()
 
 	if (!LightPointMuzzleFlash)
 	{
-		AddComponent<UPointLightComponent>(TEXT("Sample"), false, FTransform::FTransform());
+        LightPointMuzzleFlash = NewObject<UPointLightComponent>(this, UPointLightComponent::StaticClass());
+		LightPointMuzzleFlash->AttachToComponent(SMeshMuzzle, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Emitter"));
 	}
+
+	LightPointMuzzleFlash->SetRelativeLocation(MuzzleSettings.FlashLightRelativeLocation);
+}
+
+void AWeaponBase::TrySpawnComponentFlashlight()
+{
+	if (!LightSpotFlashlight)
+	{
+		if (LaserSettings.Flashlight)
+		{
+			LightSpotFlashlight = NewObject<USpotLightComponent>(this, USpotLightComponent::StaticClass());
+			LightSpotFlashlight->SetRelativeLocation(LaserSettings.RelativeLocation);
+			SetLightSpotFlashLight();
+		}
+	}
+	else
+	{
+		if (!LaserSettings.Flashlight)
+		{
+			LightSpotFlashlight->SetVisibility(false);
+		}
+	}
+}
+
+void AWeaponBase::SetLightSpotFlashLight()
+{
+	if (LightSpotFlashlight)
+		LightSpotFlashlight->AttachToComponent(SMeshLaser, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Laser"));
+}
+
+void AWeaponBase::TrySpawnComponentsLasersight()
+{
+	if (!LaserSettings.Lasersight)
+	{
+		if (StaticMeshLasersightBeam)
+		{
+			StaticMeshLasersightBeam->SetVisibility(false);
+		}
+		if (Decal)
+		{
+			Decal->SetVisibility(false);
+		}
+	}
+	else
+	{
+		if (!StaticMeshLasersightBeam)
+		{
+            StaticMeshLasersightBeam = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass());
+			StaticMeshLasersightBeam->SetRelativeLocation(LaserSettings.RelativeLocation);
+			StaticMeshLasersightBeam->AttachToComponent(SMeshLaser, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Laser"));
+		}
+
+		StaticMeshLasersightBeam->CreateDynamicMaterialInstance(0, LaserSightsSettings.LasersightBeamMaterial)->SetVectorParameterValue(TEXT("Beam Color"), LaserSightsSettings.LasersightBeamColor);
+		UMaterialInstanceDynamic* DotMaterialDynamic = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), LaserSightsSettings.LasersightDotMaterial, TEXT("Laser Dot"));
+
+		if (DotMaterialDynamic)
+		{
+			DotMaterialDynamic->SetVectorParameterValue(TEXT("Dot Color"), LaserSightsSettings.LasersightDotColor);
+			if (Decal)
+			{
+				Decal->SetDecalMaterial(DotMaterialDynamic);
+			}
+		}
+	}
+}
+
+void AWeaponBase::TrySpawnScopeRenderTarget()
+{
+	if (!ScopeSettings.RenderTargetRequired)
+	{
+		if (SceneCaptureScope)
+		{
+			SceneCaptureScope->DestroyComponent();
+		}
+		return;
+	}
+
+	if (!SceneCaptureScope)
+	{
+		SceneCaptureScope = NewObject<USceneCaptureComponent2D>(this, USceneCaptureComponent2D::StaticClass());
+		SceneCaptureScope->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
+		SceneCaptureScope->AttachToComponent(SMeshScope, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Render"));
+
+		SceneCaptureScope->TextureTarget = ScopeSettings.RenderTargetTexture;
+		SceneCaptureScope->FOVAngle = ScopeSettings.RenderTargetFieldOfView;
+		SceneCaptureScope->HiddenActors.AddUnique(this);
+		SceneCaptureScope->HiddenActors.AddUnique(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	}
+	else
+	{
+        SceneCaptureScope->TextureTarget = ScopeSettings.RenderTargetTexture;
+        SceneCaptureScope->FOVAngle = ScopeSettings.RenderTargetFieldOfView;
+	}
+}
+
+void AWeaponBase::UpdateAllPhysicalSettings()
+{
+	PrintLine();
+    Logger::Log(RowHandlePhysicalAttachments.DataTable);
+
+	OnChangeSettingsPhysicalAttachments(RowHandlePhysicalAttachments);
+	OnChangeSettingsPhysicalBody(RowHandlePhysicalWeapon);
+}
+
+void AWeaponBase::UpdateAllPhysicalSettingsLoadAssetConstruct()
+{
+	UDataTable* physicsSettingsDT;
+	Helpers::GetAsset(&physicsSettingsDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Physical.DT_WEP_CPP_Physical'"));
+	verifyf(physicsSettingsDT, L"Physics Settings DT invalid asset");
+
+	RowHandlePhysicalAttachments.DataTable = physicsSettingsDT;
+	RowHandlePhysicalAttachments.RowName = TEXT("Viewmodel");
+
+	PrintLine();
+	Logger::Log(RowHandlePhysicalAttachments.DataTable);
+
+	RowHandlePhysicalWeapon.DataTable = physicsSettingsDT;
+	RowHandlePhysicalWeapon.RowName = TEXT("Viewmodel");
+}
+
+void AWeaponBase::OnChangeSettingsPhysicalAttachments(FDataTableRowHandle Value)
+{
+	PrintLine();
+    Logger::Log(Value.DataTable);
+
+
+	SetRowHandlePhysicalAttachments(Value);
+}
+
+void AWeaponBase::OnChangeSettingsPhysicalBody(FDataTableRowHandle Value)
+{
+	SetRowHandlePhysicalWeapon(Value);
+}
+
+
+
+void AWeaponBase::SetRowHandlePhysicalAttachments(FDataTableRowHandle Value)
+{
+	Logger::Log(Value.DataTable);
+
+	RowHandlePhysicalAttachments = Value;
+
+	FSPhysical findPhysical = GetSettingsPhysical(RowHandlePhysicalAttachments);
+
+	for (auto& elem : ComponentsAttachments)
+	{
+		UpdateComponentPhysicalSettings(elem, findPhysical);
+	}
+}
+
+void AWeaponBase::SetRowHandlePhysicalWeapon(FDataTableRowHandle Value)
+{
+    Logger::Log(Value.DataTable);
+
+	RowHandlePhysicalWeapon = Value;
+
+    FSPhysical findPhysical = GetSettingsPhysical(RowHandlePhysicalWeapon);
+	UpdateComponentPhysicalSettings(Weapon, findPhysical);
+}
+
+FSPhysical AWeaponBase::GetSettingsPhysical(FDataTableRowHandle RowHandle)
+{
+	if (!RowHandle.DataTable)
+		return FSPhysical();
+
+	FSPhysical* findPhysical = RowHandle.GetRow<FSPhysical>("");
+	if (!findPhysical)
+		return FSPhysical();
+
+	return *findPhysical;
+}
+
+void AWeaponBase::UpdateComponentPhysicalSettings(UPrimitiveComponent* Component, FSPhysical Settings)
+{
+	Component->SetSimulatePhysics(Settings.SimulatePhysics);
+	Component->SetCastShadow(Settings.CastShadow);
+	Component->SetCollisionProfileName(Settings.CollisionProfileName.Name, true);
+	Component->SetVisibility(Settings.Visible, false);
+	Component->SetHiddenInGame(Settings.HiddenInGame, false);
+	Component->SetReceivesDecals(Settings.ReceivesDecals);
+	Component->SetRenderCustomDepth(Settings.RenderCustomDepth);
+}
+
+void AWeaponBase::CacheWeaponSettings()
+{
+	if (!WeaponInformation.RowHandleSettingsWeapon.DataTable)
+		return;
+
+	FSWeaponSettings* findWeaponSettings = WeaponInformation.RowHandleSettingsWeapon.GetRow<FSWeaponSettings>("");
+	if (!findWeaponSettings)
+		return;
+
+	WeaponSettings = *findWeaponSettings;
+}
+
+void AWeaponBase::CacheCharacterAbilities()
+{
+	if (!WeaponInformation.RowHandleSettingsCharacterAbilities.DataTable)
+		return;
+
+	FSAbilities* findAbilities = WeaponInformation.RowHandleSettingsCharacterAbilities.GetRow<FSAbilities>("");
+	if (!findAbilities)
+		return;
+
+	PlayerCharacterAbilities = *findAbilities;
 }
 

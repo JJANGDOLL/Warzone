@@ -255,12 +255,54 @@ public:
 
 public:
 	void DebugAllComponents();
+	void DebugAllComponentsLoadAssetConstruct();
 	virtual void OnSpawnAttachmentComponents() override;
 	void TrySpawnComponentMuzzleFlash();
+	void TrySpawnComponentFlashlight();
+	void SetLightSpotFlashLight();
+	void TrySpawnComponentsLasersight();
+	void TrySpawnScopeRenderTarget();
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Debug", meta = (AllowPrivateAccess = true))
 	bool bDebugComponents;
 
 	class UPointLightComponent* LightPointMuzzleFlash;
+	class USpotLightComponent* LightSpotFlashlight;
+	class UStaticMeshComponent* StaticMeshLasersightBeam;
+	class UDecalComponent* Decal;
+	class USceneCaptureComponent2D* SceneCaptureScope;
+
+public:
+	void UpdateAllPhysicalSettings();
+    void UpdateAllPhysicalSettingsLoadAssetConstruct();
+    virtual void OnChangeSettingsPhysicalAttachments(FDataTableRowHandle Value) override;
+    virtual void OnChangeSettingsPhysicalBody(FDataTableRowHandle Value) override;
+	void SetRowHandlePhysicalAttachments(FDataTableRowHandle Value);
+	void SetRowHandlePhysicalWeapon(FDataTableRowHandle Value);
+	FSPhysical GetSettingsPhysical(FDataTableRowHandle RowHandle);
+	void UpdateComponentPhysicalSettings(UPrimitiveComponent* Component, FSPhysical Settings);
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle RowHandlePhysicalAttachments;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FDataTableRowHandle RowHandlePhysicalWeapon;
+
+public:
+    void CacheWeaponSettings();
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FSWeaponSettings WeaponSettings;
+
+public:
+	void CacheCharacterAbilities();
+
+public:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	FSAbilities PlayerCharacterAbilities;
+
 };
 
