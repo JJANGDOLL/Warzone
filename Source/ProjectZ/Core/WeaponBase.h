@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Interfaces/IWeapon.h"
+#include "Interfaces/IInteractable.h"
 #include "Core/Defines/Structs.h"
 #include "WeaponBase.generated.h"
 
@@ -15,7 +16,7 @@ class UMeshComponent;
 class UDataTable;
 
 UCLASS(Abstract)
-class PROJECTZ_API AWeaponBase : public AActor, public IIWeapon
+class PROJECTZ_API AWeaponBase : public AActor, public IIWeapon, public IIInteractable
 {
 	GENERATED_BODY()
 	
@@ -81,7 +82,7 @@ public:
 
 	void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 
-	// OnConstruction
+// OnConstruction
 public:
 	void UpdateSocketAttachments();
 
@@ -213,6 +214,9 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	FDataTableRowHandle LaserMeshRowHandle;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
+	class UMaterialInstanceDynamic* DotMaterialDynamic;
+
 public:
 	void UpdateAttachmentGrip();
 	void UpdateAttachmentGripLoadAssetConstruct();
@@ -267,10 +271,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projz | Debug", meta = (AllowPrivateAccess = true))
 	bool bDebugComponents;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	class UPointLightComponent* LightPointMuzzleFlash;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	class USpotLightComponent* LightSpotFlashlight;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	class UStaticMeshComponent* StaticMeshLasersightBeam;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	class UDecalComponent* Decal;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	class USceneCaptureComponent2D* SceneCaptureScope;
 
 public:
@@ -290,6 +303,8 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	FDataTableRowHandle RowHandlePhysicalWeapon;
 
+
+
 public:
     void CacheWeaponSettings();
 
@@ -304,5 +319,91 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projz | Preview", meta = (AllowPrivateAccess = true))
 	FSAbilities PlayerCharacterAbilities;
 
+
+// Interfaces
+public:
+	virtual void OnAimingStop() override;
+	void ScopeRenderTargetDisable();
+
+	void TryCacheMagazineMaterials();
+
+public:
+	TArray<UMaterialInterface*> MaterialsDefaultMagazine;
+
+	virtual void OnUpdate() override;
+	void UpdateSpread();
+	void OnUpdateLaser();
+	void Disablelaser();
+    void UpdateLaserSight();
+    void UpdateFlashlight();
+	void EventServerSpawnLasersight();
+	void UpdateLasersightProperties();
+
+public:
+	int32 AmmunitionCurrent;
+	int32 ShotCount;
+	float SpreadMultiplier;
+	bool bAiming;
+	float MovementSpread;
+	bool bLaserOn;
+	FHitResult Result;
+
+public:
+	virtual void OnEquipped() override;
+	void EventEquipped();
+	void TryHideMagazine(bool Hide);
+
+public:
+	bool bHiddenMagazine;
+
+public:
+	virtual void OnUnequipped() override;
+
+public:
+	virtual void OnUpdateAmmunition(bool Fill, int32 Amount) override;
+	void UpdateAmmunitionCurrent(bool Fill, int32 Amount);
+	virtual int32 GetAmmunitionTotal() override;
+	virtual bool IsOutOfAmmunition() override;
+	void TryUpdateAmmunitionVisual();
+	void UpdateCalculation();
+	void UpdateBulletMaterials();
+
+public:
+	bool bSlideRackedVisually;
+	bool bSlideRacked;
+	int32 Calculation;
+
+public:
+	virtual void OnSaveLoadout() override;
+	void SaveLoadout();
+	
+public:
+	class ULoadout* SaveObject;
+
+public:
+	virtual void OnWeaponDrop(FVector ThrowImpulse, FVector AngularImpulse) override;
+	void WeaponDrop(FVector ThrowImpulse, FVector AngularImpulse);
+	virtual void OnSetCanInteract(bool Value) override;
+
+public:
+	bool bCanBePickedUp;
+
+public:
+	virtual void OnEquipSavedLoadout() override;
+	void TryLoadLoadout();
+	void UpdateScopefromName(FName Name);
+	void FinalizeAttachmentChange();
+	void EquipSkinRandomPreset();
+
+public:
+	class UTimelineComponent* TLineScaleAttachmentsDown;
+    class UTimelineComponent* TLineScaleAttachmentsUp;
+
+public:
+    virtual void OnInteracted(class IICharacter* InteractionOwner) override;
+
+public:
+	virtual void OnRandomizePreset() override;
+	void OnRandomizePresetCore();
 };
 

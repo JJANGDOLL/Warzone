@@ -16,6 +16,20 @@
 #include "Materials/MaterialInstanceDynamic.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "GameFramework/Character.h"
+#include "Engine/DataTable.h"
+#include "Engine/EngineTypes.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Save/Loadout.h"
+#include "Kismet/GameplayStatics.h"
+#include "Components/TimelineComponent.h"
+#include "Kismet/KismetArrayLibrary.h"
+#include "Defines/Structs.h"
+#include "Interfaces/ICharacter.h"
+
+#define MAKEDATATABLEROWHANDLE(Out, Table, Name) \
+Out.DataTable = Table; \
+Out.RowName = Name; 
+
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -66,6 +80,15 @@ void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	AmmunitionCurrent = MagazineSettings.AmmunitionTotal;
+
+    FTimerHandle TimerHandle;
+    GetWorld()->GetTimerManager().SetTimer(TimerHandle, [&]()
+    {
+    }, 0.01, false);
+
+	OnSpawnAttachmentComponents();
+
 }
 
 // Called every frame
@@ -93,10 +116,16 @@ void AWeaponBase::OnConstruction(const FTransform& Transform)
 	UpdateAttachmentGrip();
 	UpdateSkin();
 	DebugAllComponents();
-    Logger::Log(RowHandlePhysicalAttachments.DataTable);
 	UpdateAllPhysicalSettings();
     CacheWeaponSettings();
 	CacheCharacterAbilities();
+
+	Logger::Log(L"Objects");
+	Logger::Log(LightPointMuzzleFlash);
+    Logger::Log(LightSpotFlashlight);
+    Logger::Log(StaticMeshLasersightBeam);
+    Logger::Log(Decal);
+    Logger::Log(SceneCaptureScope);
 }
 
 void AWeaponBase::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
@@ -675,6 +704,15 @@ void AWeaponBase::TrySpawnComponentMuzzleFlash()
 	{
         LightPointMuzzleFlash = NewObject<UPointLightComponent>(this, UPointLightComponent::StaticClass());
 		LightPointMuzzleFlash->AttachToComponent(SMeshMuzzle, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Emitter"));
+		LightPointMuzzleFlash->Intensity = 250.f;
+		LightPointMuzzleFlash->SetLightColor(FLinearColor(1.0f, 0.610496f, 0.018164f));
+		LightPointMuzzleFlash->SetAttenuationRadius(1100.f);
+		LightPointMuzzleFlash->SetTemperature(3800.f);
+		LightPointMuzzleFlash->bUseTemperature = true;
+
+
+
+		Logger::Log("Create LightPointMuzzleFlash");
 	}
 
 	LightPointMuzzleFlash->SetRelativeLocation(MuzzleSettings.FlashLightRelativeLocation);
@@ -687,6 +725,12 @@ void AWeaponBase::TrySpawnComponentFlashlight()
 		if (LaserSettings.Flashlight)
 		{
 			LightSpotFlashlight = NewObject<USpotLightComponent>(this, USpotLightComponent::StaticClass());
+			LightSpotFlashlight->Intensity = 80.0f;
+			LightSpotFlashlight->SetAttenuationRadius(2500.f);
+			LightSpotFlashlight->InnerConeAngle = 8.f;
+			LightSpotFlashlight->OuterConeAngle = 20.f;
+			LightSpotFlashlight->SetVisibility(false);
+
 			LightSpotFlashlight->SetRelativeLocation(LaserSettings.RelativeLocation);
 			SetLightSpotFlashLight();
 		}
@@ -721,15 +765,29 @@ void AWeaponBase::TrySpawnComponentsLasersight()
 	}
 	else
 	{
+        PrintLine();
+
 		if (!StaticMeshLasersightBeam)
 		{
+			PrintLine();
             StaticMeshLasersightBeam = NewObject<UStaticMeshComponent>(this, UStaticMeshComponent::StaticClass());
+
+			UStaticMesh* lasersightMesh;
+			Helpers::GetAssetDynamic(&lasersightMesh, TEXT("StaticMesh'/Game/InfimaGames/LowPolyShooterPack/Art/Effects/Models/SM_Laser_Beam.SM_Laser_Beam'"));
+
+			UMaterialInstanceConstant* lasersightMaterial;
+			Helpers::GetAssetDynamic(&lasersightMaterial, TEXT("MaterialInstanceConstant'/Game/InfimaGames/LowPolyShooterPack/Art/Effects/Materials/MI_Laser_Beam.MI_Laser_Beam'"));
+			lasersightMesh->SetMaterial(0, lasersightMaterial);
+
+			StaticMeshLasersightBeam->SetStaticMesh(lasersightMesh);
+
 			StaticMeshLasersightBeam->SetRelativeLocation(LaserSettings.RelativeLocation);
 			StaticMeshLasersightBeam->AttachToComponent(SMeshLaser, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Laser"));
 		}
 
 		StaticMeshLasersightBeam->CreateDynamicMaterialInstance(0, LaserSightsSettings.LasersightBeamMaterial)->SetVectorParameterValue(TEXT("Beam Color"), LaserSightsSettings.LasersightBeamColor);
-		UMaterialInstanceDynamic* DotMaterialDynamic = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), LaserSightsSettings.LasersightDotMaterial, TEXT("Laser Dot"));
+		
+		DotMaterialDynamic = UKismetMaterialLibrary::CreateDynamicMaterialInstance(GetWorld(), LaserSightsSettings.LasersightDotMaterial, TEXT("Laser Dot"));
 
 		if (DotMaterialDynamic)
 		{
@@ -756,8 +814,14 @@ void AWeaponBase::TrySpawnScopeRenderTarget()
 	if (!SceneCaptureScope)
 	{
 		SceneCaptureScope = NewObject<USceneCaptureComponent2D>(this, USceneCaptureComponent2D::StaticClass());
-		SceneCaptureScope->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
+		SceneCaptureScope->PrimitiveRenderMode = ESceneCapturePrimitiveRenderMode::PRM_RenderScenePrimitives;
+		SceneCaptureScope->bCaptureEveryFrame = false;
+		SceneCaptureScope->bCaptureOnMovement = false;
+		SceneCaptureScope->bAlwaysPersistRenderingState = true;
+		SceneCaptureScope->SetVisibility(false);
+
 		SceneCaptureScope->AttachToComponent(SMeshScope, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Render"));
+		SceneCaptureScope->SetRelativeRotation(FRotator(0.f, 90.f, 0.f));
 
 		SceneCaptureScope->TextureTarget = ScopeSettings.RenderTargetTexture;
 		SceneCaptureScope->FOVAngle = ScopeSettings.RenderTargetFieldOfView;
@@ -783,24 +847,20 @@ void AWeaponBase::UpdateAllPhysicalSettings()
 void AWeaponBase::UpdateAllPhysicalSettingsLoadAssetConstruct()
 {
 	UDataTable* physicsSettingsDT;
+
 	Helpers::GetAsset(&physicsSettingsDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Physical.DT_WEP_CPP_Physical'"));
 	verifyf(physicsSettingsDT, L"Physics Settings DT invalid asset");
 
-	RowHandlePhysicalAttachments.DataTable = physicsSettingsDT;
-	RowHandlePhysicalAttachments.RowName = TEXT("Viewmodel");
+    RowHandlePhysicalWeapon.DataTable = physicsSettingsDT;
+    RowHandlePhysicalWeapon.RowName = TEXT("Viewmodel");
 
-	PrintLine();
-	Logger::Log(RowHandlePhysicalAttachments.DataTable);
-
-	RowHandlePhysicalWeapon.DataTable = physicsSettingsDT;
-	RowHandlePhysicalWeapon.RowName = TEXT("Viewmodel");
+    RowHandlePhysicalAttachments.DataTable = physicsSettingsDT;
+    RowHandlePhysicalAttachments.RowName = TEXT("Viewmodel");
 }
 
 void AWeaponBase::OnChangeSettingsPhysicalAttachments(FDataTableRowHandle Value)
 {
-	PrintLine();
     Logger::Log(Value.DataTable);
-
 
 	SetRowHandlePhysicalAttachments(Value);
 }
@@ -881,5 +941,425 @@ void AWeaponBase::CacheCharacterAbilities()
 		return;
 
 	PlayerCharacterAbilities = *findAbilities;
+
+	for (auto& elem : PlayerCharacterAbilities.AbilityKnife.TagsRequired)
+	{
+		Logger::Log(elem.ToString());
+	}
+}
+
+void AWeaponBase::OnAimingStop()
+{
+	if (!SMeshScope)
+		return;
+
+	SMeshScope->SetMaterialByName(ScopeSettings.RenderMaterialSlotName, ScopeSettings.RenderMaterialReplacement);
+	ScopeRenderTargetDisable();
+}
+
+void AWeaponBase::ScopeRenderTargetDisable()
+{
+	if (!SceneCaptureScope)
+		return;
+
+	SceneCaptureScope->bCaptureOnMovement = false;
+	SceneCaptureScope->SetVisibility(false);
+}
+
+void AWeaponBase::TryCacheMagazineMaterials()
+{
+	if (!SMeshMagazine)
+		return;
+
+	
+	MaterialsDefaultMagazine = SMeshMagazine->GetMaterials();
+}
+
+void AWeaponBase::OnUpdate()
+{
+	UpdateSpread();
+	OnUpdateLaser();
+}
+
+void AWeaponBase::UpdateSpread()
+{
+	if (WeaponSettings.FireMode == EFireMode::Semi)
+	{
+		SpreadMultiplier = (bAiming ?  WeaponSettings.SpreadAimingMultiplier * ShotCount : ShotCount * MovementSpread);
+	}
+	else
+	{
+		if (!WeaponSettings.SpreadCurve)
+			return;
+
+		float tempF1 = 1.f;
+		if (bAiming)
+			tempF1 = WeaponSettings.SpreadAimingMultiplier;
+
+		float tempF2 = tempF1 * WeaponSettings.SpreadCurve->GetFloatValue(FMath::Clamp<float>(ShotCount / MagazineSettings.AmmunitionTotal, 0.f, 1.f));
+
+		if (!bAiming)
+			tempF2 += MovementSpread;
+
+		SpreadMultiplier = tempF2;
+	}
+}
+
+void AWeaponBase::OnUpdateLaser()
+{
+	if (!bLaserOn)
+	{
+		Disablelaser();
+	}
+	else
+	{
+		UpdateLaserSight();
+		UpdateFlashlight();
+	}
+}
+
+void AWeaponBase::Disablelaser()
+{
+	bLaserOn = false;
+
+	if (!LaserSettings.Flashlight)
+		return;
+
+	if (LightSpotFlashlight)
+		LightSpotFlashlight->SetVisibility(false);
+
+	if (!LaserSettings.Lasersight)
+		return;
+
+	if (StaticMeshLasersightBeam)
+		StaticMeshLasersightBeam->SetWorldScale3D(FVector(0.f, 0.f, 0.f));
+
+	if (Decal)
+		Decal->SetVisibility(false);
+}
+
+void AWeaponBase::UpdateLaserSight()
+{
+	if (!LaserSettings.Lasersight)
+		return;
+
+	EventServerSpawnLasersight();
+	
+	if (!StaticMeshLasersightBeam)
+		return;
+
+	StaticMeshLasersightBeam->SetVisibility(true);
+	UpdateLasersightProperties();
+}
+
+void AWeaponBase::UpdateFlashlight()
+{
+	if (!LaserSettings.Flashlight)
+		return;
+
+	if (LightSpotFlashlight)
+		LightSpotFlashlight->SetVisibility(true);
+}
+
+void AWeaponBase::EventServerSpawnLasersight()
+{
+	if (Decal)
+		return;
+
+	if (!DotMaterialDynamic)
+		return;
+
+	Decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), DotMaterialDynamic, FVector(1.f, 1.f, 1.f), FVector(0.f, 0.f, 0.f), FRotator(0.f, 90.f, 0.f));
+	Decal->SetFadeScreenSize(0.f);
+}
+
+void AWeaponBase::UpdateLasersightProperties()
+{
+	if (!Decal)
+		return;
+
+	GetWorld()->LineTraceSingleByChannel(
+		Result,
+		SMeshLaser->GetSocketTransform(TEXT("SOCKET_Laser"), RTS_World).GetLocation(),
+		SMeshLaser->GetSocketTransform(TEXT("SOCKET_Laser"), RTS_World).GetLocation() + SMeshLaser->GetSocketTransform(TEXT("SOCKET_Laser"), RTS_World).GetRotation().GetForwardVector() * 10000.f,
+		ECollisionChannel::ECC_GameTraceChannel1
+	);
+
+	Decal->SetVisibility(Result.bBlockingHit);
+	if (!Result.bBlockingHit)
+	{
+		StaticMeshLasersightBeam->SetWorldScale3D(FVector(10000.f, 0.f, LaserSightsSettings.LasersightBeamThickness));
+	}
+	else
+	{
+		StaticMeshLasersightBeam->SetWorldScale3D(FVector(Result.Distance / 20.f, LaserSightsSettings.LasersightBeamThickness, LaserSightsSettings.LasersightBeamThickness));
+		Decal->SetWorldRotation(UKismetMathLibrary::MakeRotFromX(Result.Normal));
+		Decal->SetRelativeScale3D(FVector(Result.Distance * LaserSightsSettings.LasersightDotSizeMultiplier + LaserSightsSettings.LasersightDotSizeBase));
+
+	}    
+}
+
+void AWeaponBase::OnEquipped()
+{
+	EventEquipped();
+}
+
+void AWeaponBase::EventEquipped()
+{
+	TryHideMagazine(bHiddenMagazine);
+}
+
+void AWeaponBase::TryHideMagazine(bool Hide)
+{
+	static UDataTable* physicalWEPDT;
+	if (!physicalWEPDT)
+		Helpers::GetAssetDynamic(&physicalWEPDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Physical.DT_WEP_CPP_Physical'"));
+
+	if (Hide)
+	{
+		FDataTableRowHandle param;
+		param.DataTable = physicalWEPDT;
+		param.RowName = TEXT("Hidden");
+
+		FSPhysical findPhysical = GetSettingsPhysical(param);
+		UpdateComponentPhysicalSettings(SMeshMagazine, findPhysical);
+	}
+	else
+	{
+		UpdateComponentPhysicalSettings(SMeshMagazine, GetSettingsPhysical(RowHandlePhysicalAttachments));
+	}
+
+}
+
+void AWeaponBase::OnUnequipped()
+{
+	Disablelaser();
+	OnAimingStop();
+}
+
+void AWeaponBase::OnUpdateAmmunition(bool Fill, int32 Amount)
+{
+	UpdateAmmunitionCurrent(Fill, Amount);
+}
+
+void AWeaponBase::UpdateAmmunitionCurrent(bool Fill, int32 Amount)
+{
+	if (Fill)
+	{
+		AmmunitionCurrent = GetAmmunitionTotal();
+	}
+	else
+	{
+		AmmunitionCurrent = FMath::Clamp<int32>(AmmunitionCurrent + Amount, 0, GetAmmunitionTotal());
+		bSlideRackedVisually = IsOutOfAmmunition();
+		bSlideRacked = bSlideRackedVisually;
+	}
+
+
+}
+
+int32 AWeaponBase::GetAmmunitionTotal()
+{
+	return MagazineSettings.AmmunitionTotal;
+}
+
+bool AWeaponBase::IsOutOfAmmunition()
+{
+	return AmmunitionCurrent == 0;
+}
+
+void AWeaponBase::TryUpdateAmmunitionVisual()
+{
+	if (!MagazineSettings.AmmunitionVisualUpdate)
+		return;
+
+	UpdateCalculation();
+	UpdateBulletMaterials();
+}
+
+void AWeaponBase::UpdateCalculation()
+{
+	if (AmmunitionCurrent == 0)
+	{
+		Calculation = 0;
+		return;
+	}
+	
+	int32 matAmmuSI = SMeshMagazine->GetNumMaterials() - MagazineSettings.AmmunitionVisualStartingIndex;
+
+	Calculation = matAmmuSI - UKismetMathLibrary::FCeil(matAmmuSI * (AmmunitionCurrent / MagazineSettings.AmmunitionTotal)) + MagazineSettings.AmmunitionVisualStartingIndex;
+}
+
+void AWeaponBase::UpdateBulletMaterials()
+{
+	for (int i = MagazineSettings.AmmunitionVisualStartingIndex; i < SMeshMagazine->GetNumMaterials() - 1; i++)
+	{
+		if (i < Calculation)
+		{
+			SMeshMagazine->SetMaterial(i, MagazineSettings.AmmunitionVisualHiddenMaterial);
+		}
+		else
+		{
+			SMeshMagazine->SetMaterial(i, MaterialsDefaultMagazine[i]);
+		}
+	}
+}
+
+void AWeaponBase::OnSaveLoadout()
+{
+	SaveLoadout();
+}
+
+void AWeaponBase::SaveLoadout()
+{
+	TSubclassOf<ULoadout> loadout;
+	SaveObject = Cast<ULoadout>(UGameplayStatics::CreateSaveGameObject(loadout));
+
+	SaveObject->NameGrip = GripMeshRowHandle.RowName;
+	SaveObject->NameLaser = LaserMeshRowHandle.RowName;
+	SaveObject->NameMuzzle = MuzzleMeshRowHandle.RowName;
+	SaveObject->NameScope = ScopeMeshRowHandle.RowName;
+
+	UGameplayStatics::SaveGameToSlot(SaveObject, TEXT("Weapon_Loadout"), 0);
+}
+
+void AWeaponBase::OnWeaponDrop(FVector ThrowImpulse, FVector AngularImpulse)
+{
+	WeaponDrop(ThrowImpulse, AngularImpulse);
+}
+
+void AWeaponBase::WeaponDrop(FVector Impulse, FVector AngularImpulse)
+{
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	OnSetCanInteract(true);
+
+	static UDataTable* physicsDT;
+	if(!physicsDT)
+		Helpers::GetAssetDynamic(&physicsDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Physical.DT_WEP_CPP_Physical'"));
+
+	FDataTableRowHandle param;
+	param.DataTable = physicsDT;
+	param.RowName = TEXT("Physics");
+
+	OnChangeSettingsPhysicalBody(param);
+	OnChangeSettingsPhysicalAttachments(param);
+
+	Weapon->AddImpulse(Impulse * Weapon->GetMass());
+
+	Weapon->AddAngularImpulse(AngularImpulse);
+}
+
+void AWeaponBase::OnSetCanInteract(bool Value)
+{
+	bCanBePickedUp = Value;
+}
+
+void AWeaponBase::OnEquipSavedLoadout()
+{
+	if (!TLineScaleAttachmentsDown)
+		TLineScaleAttachmentsDown = NewObject<UTimelineComponent>();
+		
+	TLineScaleAttachmentsDown->PlayFromStart();
+
+	UKismetSystemLibrary::RetriggerableDelay(GetWorld(), TLineScaleAttachmentsDown->GetTimelineLength(), FLatentActionInfo());
+
+	TryLoadLoadout();
+}
+
+void AWeaponBase::TryLoadLoadout()
+{
+	ULoadout* loadout = Cast<ULoadout>(UGameplayStatics::LoadGameFromSlot(TEXT("Weapon_Loadout"), 0));
+	if (!loadout)
+		return;
+
+	SaveObject = loadout;
+
+	FDataTableRowHandle presetMuzzle;
+	presetMuzzle.DataTable = WeaponPresetOverride.Attachments.RowHandleMeshMuzzle.DataTable;
+	presetMuzzle.RowName = SaveObject->NameMuzzle;
+
+	FDataTableRowHandle infoMuzzle;
+	infoMuzzle.DataTable = WeaponInformation.SettingsAttachments.DataTableSettingsMuzzle;
+	infoMuzzle.RowName = SaveObject->NameMuzzle;
+
+	OnSwapAttachmentMuzzle(presetMuzzle, infoMuzzle);
+
+	UpdateScopefromName(SaveObject->NameScope);
+
+	FDataTableRowHandle q;
+	FDataTableRowHandle w;
+
+	MAKEDATATABLEROWHANDLE(q, WeaponPresetOverride.Attachments.RowHandleMeshGrip.DataTable, SaveObject->NameGrip);
+	MAKEDATATABLEROWHANDLE(w, WeaponInformation.SettingsAttachments.DataTableSettingsGrip, SaveObject->NameGrip);
+
+	OnSwapattachmentGrip(q, w);
+
+    MAKEDATATABLEROWHANDLE(q, WeaponPresetOverride.Attachments.RowHandleMeshLaser.DataTable, SaveObject->NameLaser);
+	MAKEDATATABLEROWHANDLE(w, WeaponInformation.SettingsAttachments.DataTableSettingsLaser, SaveObject->NameLaser);
+
+	OnSwapAttachmentLaser(q, w);
+
+}
+
+void AWeaponBase::UpdateScopefromName(FName Name)
+{
+	if (Name == TEXT("Hidden"))
+	{
+		FDataTableRowHandle t;
+		MAKEDATATABLEROWHANDLE(t, WeaponPresetOverride.Attachments.RowHandleMeshScope.DataTable, TEXT("Hidden"));
+		OnSwapAttachmentScope(t, IronsightSettings.RowHandleSettingsScope);
+		return;
+	}
+
+    FDataTableRowHandle q;
+    MAKEDATATABLEROWHANDLE(q, WeaponPresetOverride.Attachments.RowHandleMeshScope.DataTable, Name);
+	FDataTableRowHandle w;
+    MAKEDATATABLEROWHANDLE(w, WeaponInformation.SettingsAttachments.DataTableSettingsScope, Name);
+
+    OnSwapAttachmentScope(q, w);
+
+	FinalizeAttachmentChange();
+}
+
+void AWeaponBase::FinalizeAttachmentChange()
+{
+	OnSpawnAttachmentComponents();
+	EquipSkinRandomPreset();
+	TLineScaleAttachmentsUp->PlayFromStart();
+
+	MaterialsDefaultMagazine = SMeshMagazine->GetMaterials();
+
+	OnAimingStop();
+}
+
+void AWeaponBase::EquipSkinRandomPreset()
+{
+	TArray<FName> presetNames;
+	presetNames = WeaponPresetRowHandle.DataTable->GetRowNames();
+	
+
+	WeaponPresetRowHandle.RowName = presetNames[FMath::RandRange(0, presetNames.Num())];
+
+	FSPreset preset;
+
+	preset = *(WeaponPresetRowHandle.GetRow<FSPreset>(""));
+
+	if (preset.RowHandleSkin.DataTable)
+		SetSkinRowHandle(preset.RowHandleSkin);
+}
+
+void AWeaponBase::OnInteracted(IICharacter* InteractionOwner)
+{
+	InteractionOwner->OnPickUp();
+}
+
+void AWeaponBase::OnRandomizePreset()
+{
+	OnRandomizePresetCore();
+}
+
+void AWeaponBase::OnRandomizePresetCore()
+{
+
 }
 

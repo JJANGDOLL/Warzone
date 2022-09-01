@@ -1,0 +1,14 @@
+[
+	{
+		"Name": "Hidden",
+		"Mesh": "StaticMesh'/Game/InfimaGames/Utilities/Art/Others/SM_Placeholder_Invisible.SM_Placeholder_Invisible'"
+	},
+	{
+		"Name": "Flashlight",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/_Common/Attachments/Models/SM_ATT_Laser_Flashlight_01.SM_ATT_Laser_Flashlight_01'"
+	},
+	{
+		"Name": "Lasersight",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/_Common/Attachments/Models/SM_ATT_Laser_Sight_01.SM_ATT_Laser_Sight_01'"
+	}
+]

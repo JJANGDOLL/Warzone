@@ -1,0 +1,17 @@
+[
+	{
+		"Name":"Grip-01",
+		"IdlePoseOverride":"None",
+		"AimPoseOverride":"None"
+	},
+	{
+		"Name":"Bipod-01",
+		"IdlePoseOverride":"None",
+		"AimPoseOverride":"None"
+	},
+	{
+		"Name":"Bipod-02",
+		"IdlePoseOverride":"None",
+		"AimPoseOverride":"None"
+	}
+]

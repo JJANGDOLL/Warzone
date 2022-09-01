@@ -788,7 +788,7 @@ public:
     FSRecoil RecoilProperties;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    class UCurveVector* SpreadCurve;
+    class UCurveFloat* SpreadCurve;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     class UForceFeedbackEffect* ForceFeedbackEffect;

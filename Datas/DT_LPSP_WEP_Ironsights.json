@@ -1,0 +1,275 @@
+[
+	{
+		"Name": "Hidden",
+		"Mesh": "StaticMesh'/Game/InfimaGames/Utilities/Art/Others/SM_Placeholder_Invisible.SM_Placeholder_Invisible'",
+		"Icon":
+		{
+			"Texture": "None"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Hidden"
+		}
+	},
+	{
+		"Name": "Assault-Rifle-01",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/SM_AR_01_Scope_Default.SM_AR_01_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/ARs/T_HUD_AR_01_Scope_Default_D.T_HUD_AR_01_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Assault-Rifle-01"
+		}
+	},
+	{
+		"Name": "Assault-Rifle-02",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/SM_AR_02_Scope_Default.SM_AR_02_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/ARs/T_HUD_AR_02_Scope_Default_D.T_HUD_AR_02_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Assault-Rifle-02"
+		}
+	},
+	{
+		"Name": "Assault-Rifle-03",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/SM_AR_03_Scope_Default.SM_AR_03_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/ARs/T_HUD_AR_03_Scope_Default_D.T_HUD_AR_03_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Assault-Rifle-03"
+		}
+	},
+	{
+		"Name": "Handgun-01",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Handguns/SM_Handgun_01_Scope_Default.SM_Handgun_01_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Handguns/T_HUD_Handgun_01_Scope_Default_D.T_HUD_Handgun_01_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Handgun-01"
+		}
+	},
+	{
+		"Name": "Handgun-02",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Handguns/SM_Handgun_02_Scope_Default.SM_Handgun_02_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Handguns/T_HUD_Handgun_02_Scope_Default_D.T_HUD_Handgun_02_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Handgun-02"
+		}
+	},
+	{
+		"Name": "Handgun-03",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Handguns/SM_Handgun_03_Scope_Default.SM_Handgun_03_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Handguns/T_HUD_Handgun_03_Scope_Default_D.T_HUD_Handgun_03_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Handgun-03"
+		}
+	},
+	{
+		"Name": "Handgun-04",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Handguns/SM_Handgun_04_Scope_Default.SM_Handgun_04_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Handguns/T_HUD_Handgun_04_Scope_Default_D.T_HUD_Handgun_04_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Handgun-04"
+		}
+	},
+	{
+		"Name": "Launcher-Rocket-01",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Launchers/SM_RL_01_Scope_Default.SM_RL_01_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Launchers/T_HUD_RL_01_Scope_Default_D.T_HUD_RL_01_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Launcher-Rocket-01"
+		}
+	},
+	{
+		"Name": "Launcher-Grenade-01-Back",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Launchers/SM_GL_01_Scope_B_Default.SM_GL_01_Scope_B_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Launchers/T_HUD_GL_01_Iron_Sights_B_Default_D.T_HUD_GL_01_Iron_Sights_B_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Launcher-Grenade-01"
+		}
+	},
+	{
+		"Name": "Launcher-Grenade-01-Front",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Launchers/SM_GL_01_Scope_F_Default.SM_GL_01_Scope_F_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Launchers/T_HUD_GL_01_Iron_Sights_F_Default_D.T_HUD_GL_01_Iron_Sights_F_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Launcher-Grenade-01"
+		}
+	},
+	{
+		"Name": "Shotgun-01",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Shotguns/SM_Shotgun_01_Scope_Default.SM_Shotgun_01_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Shotguns/T_HUD_Shotgun_01_Scope_Default_D.T_HUD_Shotgun_01_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Shotgun-01"
+		}
+	},
+	{
+		"Name": "SMG-01",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/SMGs/SM_SMG_01_Scope_Default.SM_SMG_01_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/SMGs/T_HUD_SMG_01_Scope_Default_D.T_HUD_SMG_01_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "SMG-01"
+		}
+	},
+	{
+		"Name": "SMG-02",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/SMGs/SM_SMG_02_Scope_Default.SM_SMG_02_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/SMGs/T_HUD_SMG_02_Scope_Default_D.T_HUD_SMG_02_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "SMG-02"
+		}
+	},
+	{
+		"Name": "SMG-03",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/SMGs/SM_SMG_03_Scope_Default.SM_SMG_03_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/SMGs/T_HUD_SMG_03_Scope_Default_D.T_HUD_SMG_03_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "SMG-03"
+		}
+	},
+	{
+		"Name": "SMG-04",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/SMGs/SM_SMG_04_Scope_Default.SM_SMG_04_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/SMGs/T_HUD_SMG_04_Scope_Default_D.T_HUD_SMG_04_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "SMG-04"
+		}
+	},
+	{
+		"Name": "SMG-05",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/SMGs/SM_SMG_05_Scope_Default.SM_SMG_05_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/SMGs/T_HUD_SMG_05_Scope_Default_D.T_HUD_SMG_05_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "SMG-05"
+		}
+	},
+	{
+		"Name": "Sniper-01",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Snipers/SM_Sniper_01_Scope_Default.SM_Sniper_01_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Snipers/T_HUD_Sniper_01_Scope_Default_D.T_HUD_Sniper_01_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Sniper-01"
+		}
+	},
+	{
+		"Name": "Sniper-02",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Snipers/SM_Sniper_02_Scope_Default.SM_Sniper_02_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Snipers/T_HUD_Sniper_02_Scope_Default_D.T_HUD_Sniper_02_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Sniper-02"
+		}
+	},
+	{
+		"Name": "Sniper-03",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Snipers/SM_Sniper_03_Scope_Default.SM_Sniper_03_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Snipers/T_HUD_Sniper_03_Scope_Default_D.T_HUD_Sniper_03_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Sniper-03"
+		}
+	},
+	{
+		"Name": "Sniper-03-Heavy",
+		"Mesh": "StaticMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/Snipers/SM_Sniper_02_Scope_Default.SM_Sniper_02_Scope_Default'",
+		"Icon":
+		{
+			"Texture": "Texture2D'/Game/InfimaGames/LowPolyShooterPack/Art/Icons/Weapons/Snipers/T_HUD_Sniper_03_Scope_Default_D.T_HUD_Sniper_03_Scope_Default_D'"
+		},
+		"RowHandleSettingsScope":
+		{
+			"DataTable": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_IronsightsSettings.DT_WEP_CPP_IronsightsSettings'",
+			"RowName": "Sniper-03"
+		}
+	}
+]

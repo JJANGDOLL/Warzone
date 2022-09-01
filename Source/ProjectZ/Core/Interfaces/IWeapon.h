@@ -27,4 +27,15 @@ public:
 	virtual void OnSpawnAttachmentComponents() = 0;
 	virtual void OnChangeSettingsPhysicalAttachments(FDataTableRowHandle Value) = 0;
 	virtual void OnChangeSettingsPhysicalBody(FDataTableRowHandle Value) = 0;
+	virtual void OnAimingStop() = 0;
+	virtual void OnUpdate() = 0;
+	virtual void OnEquipped() = 0;
+	virtual void OnUnequipped() = 0;
+	virtual void OnUpdateAmmunition(bool Fill, int32 Amount) = 0;
+	virtual int32 GetAmmunitionTotal() = 0;
+	virtual bool IsOutOfAmmunition() = 0;
+	virtual void OnSaveLoadout() = 0;
+	virtual void OnWeaponDrop(FVector ThrowImpulse, FVector AngularImpulse) = 0;
+	virtual void OnEquipSavedLoadout() = 0;
+	virtual void OnRandomizePreset() = 0;
 };
