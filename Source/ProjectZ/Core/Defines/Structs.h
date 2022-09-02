@@ -886,3 +886,29 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     bool RenderCustomDepth;
 };
+
+USTRUCT(BlueprintType)
+struct FSAnimation : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class UAnimMontage* SequenceBaseFirstPerson;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UAnimMontage* SequenceBaseThirdPerson;
+};
+
+USTRUCT(BlueprintType)
+struct FSSound : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float Delay;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class USoundCue* SoundCue;
+};

@@ -1,0 +1,37 @@
+[
+	{
+		"Name":"Fire",
+		"SequenceBaseFirstPerson":"AnimMontage'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/Animations/AM_WEP_AR_01_Fire.AM_WEP_AR_01_Fire'",
+		"SequenceBaseThirdPerson":"AnimMontage'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/Animations/AM_WEP_AR_01_Fire.AM_WEP_AR_01_Fire'"
+	},
+	{
+		"Name":"Fire-Empty",
+		"SequenceBaseFirstPerson":"None",
+		"SequenceBaseThirdPerson":"None"
+	},
+	{
+		"Name":"Reload",
+		"SequenceBaseFirstPerson":"AnimMontage'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/Animations/AM_FP_WEP_AR_01_Reload.AM_FP_WEP_AR_01_Reload'",
+		"SequenceBaseThirdPerson":"AnimMontage'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/Animations/AM_TP_WEP_AR_01_Reload.AM_TP_WEP_AR_01_Reload'"
+	},
+	{
+		"Name":"Reload-Empty",
+		"SequenceBaseFirstPerson":"AnimMontage'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/Animations/AM_FP_WEP_AR_01_Reload_Empty.AM_FP_WEP_AR_01_Reload_Empty'",
+		"SequenceBaseThirdPerson":"AnimMontage'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/Animations/AM_TP_WEP_AR_01_Reload_Empty.AM_TP_WEP_AR_01_Reload_Empty'"
+	},
+	{
+		"Name":"Inspect",
+		"SequenceBaseFirstPerson":"None",
+		"SequenceBaseThirdPerson":"None"
+	},
+	{
+		"Name":"Holster",
+		"SequenceBaseFirstPerson":"None",
+		"SequenceBaseThirdPerson":"None"
+	},
+	{
+		"Name":"Unholster",
+		"SequenceBaseFirstPerson":"None",
+		"SequenceBaseThirdPerson":"None"
+	}
+]

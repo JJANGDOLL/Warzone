@@ -19,7 +19,7 @@
 			},
 			"DataTablePosesCharacter": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Animations/DT_LPSP_CH_AR_01_Poses.DT_LPSP_CH_AR_01_Poses'",
 			"DataTableMontagesCharacter": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Animations/DT_LPSP_CH_AR_01_Montages.DT_LPSP_CH_AR_01_Montages'",
-			"DataTableMontagesWeapon": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Animations/DT_LPSP_WEP_AR_01_Montages.DT_LPSP_WEP_AR_01_Montages'"
+			"DataTableMontagesWeapon": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_AR_01_Montages.DT_WEP_CPP_AR_01_Montages'"
 		},
 		"RowHandleSettingsWeapon":
 		{
@@ -37,7 +37,7 @@
 			"RowName": "Assault-Rifle"
 		},
 		"DataTableIcons": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Icons/DT_LPSP_WEP_AR_01_Icons.DT_LPSP_WEP_AR_01_Icons'",
-		"DataTableSoundCues": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Sounds/DT_LPSP_WEP_AR_01_Sounds.DT_LPSP_WEP_AR_01_Sounds'"
+		"DataTableSoundCues": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_AR_01_Sounds.DT_WEP_CPP_AR_01_Sounds'"
 	},
 	{
 		"Name": "Assault-Rifle-01-Custom",
@@ -59,7 +59,7 @@
 			},
 			"DataTablePosesCharacter": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Animations/DT_LPSP_CH_AR_01_Poses.DT_LPSP_CH_AR_01_Poses'",
 			"DataTableMontagesCharacter": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Animations/DT_LPSP_CH_AR_01_Montages.DT_LPSP_CH_AR_01_Montages'",
-			"DataTableMontagesWeapon": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Animations/DT_LPSP_WEP_AR_01_Montages.DT_LPSP_WEP_AR_01_Montages'"
+			"DataTableMontagesWeapon": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_AR_01_Montages.DT_WEP_CPP_AR_01_Montages'"
 		},
 		"RowHandleSettingsWeapon":
 		{
@@ -77,7 +77,7 @@
 			"RowName": "Assault-Rifle"
 		},
 		"DataTableIcons": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Icons/DT_LPSP_WEP_AR_01_Icons.DT_LPSP_WEP_AR_01_Icons'",
-		"DataTableSoundCues": "DataTable'/Game/InfimaGames/LowPolyShooterPack/Data/Weapons/Sounds/DT_LPSP_WEP_AR_01_Sounds.DT_LPSP_WEP_AR_01_Sounds'"
+		"DataTableSoundCues": "DataTable'/Game/Projz/DataTables/DT_WEP_CPP_AR_01_Sounds.DT_WEP_CPP_AR_01_Sounds'"
 	},
 	{
 		"Name": "Assault-Rifle-02",

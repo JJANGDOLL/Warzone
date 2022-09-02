@@ -25,6 +25,11 @@
 #include "Kismet/KismetArrayLibrary.h"
 #include "Defines/Structs.h"
 #include "Interfaces/ICharacter.h"
+#include "Animation/AnimSequenceBase.h"
+#include "Animation/AnimMontage.h"
+#include "Sound/SoundCue.h"
+#include "Utilities/ViewmodelHelper.h"
+#include "Curves/CurveFloat.h"
 
 #define MAKEDATATABLEROWHANDLE(Out, Table, Name) \
 Out.DataTable = Table; \
@@ -54,10 +59,21 @@ AWeaponBase::AWeaponBase()
 	Helpers::CreateComponent(this, &SMeshMuzzle, TEXT("SMesh_Muzzle"), SocketMuzzle);
 	Helpers::CreateComponent(this, &SMeshScope, TEXT("SMesh_Scope"), SocketScope);
 
+	Helpers::CreateActorComponent(this, &ViewmodelHelper, TEXT("Viewmodel Helper"));
+
+	Helpers::CreateActorComponent(this, &TLineScaleAttachmentsUp, TEXT("TLine Scale Attachments Up"));
+	Helpers::CreateActorComponent(this, &TLineScaleAttachmentsDown, TEXT("TLine Scale Attachments Down"));
+
 	// Base Actor Sample Mesh init
 	USkeletalMesh* weaponMesh;
 	Helpers::GetAsset(&weaponMesh, TEXT("SkeletalMesh'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/ARs/SK_AR_01.SK_AR_01'"));
 	Weapon->SetSkeletalMesh(weaponMesh);
+
+
+
+    AttachmentsUpFunction.BindUFunction(this, FName("SetAttachmentsScale"));
+    AttachmentsDownFunction.BindUFunction(this, FName("SetAttachmentsScale"));
+
 
 	// OnConstruction load asset
 	CacheWeaponPresetLoadAssetConstruct();
@@ -570,7 +586,9 @@ void AWeaponBase::SetGripMeshRowHandle(FDataTableRowHandle Mesh)
 	if (!GripMeshRowHandle.DataTable)
 		return;
 
-	SMeshGrip->SetStaticMesh(GripMeshRowHandle.GetRow<FSMesh>("")->Mesh);
+	FSMesh* findMesh = GripMeshRowHandle.GetRow<FSMesh>("");
+	if(findMesh)
+		SMeshGrip->SetStaticMesh(findMesh->Mesh);
 }
 
 void AWeaponBase::UpdateSkin()
@@ -1256,8 +1274,8 @@ void AWeaponBase::OnSetCanInteract(bool Value)
 
 void AWeaponBase::OnEquipSavedLoadout()
 {
-	if (!TLineScaleAttachmentsDown)
-		TLineScaleAttachmentsDown = NewObject<UTimelineComponent>();
+// 	if (!TLineScaleAttachmentsDown)
+// 		TLineScaleAttachmentsDown = NewObject<UTimelineComponent>();
 		
 	TLineScaleAttachmentsDown->PlayFromStart();
 
@@ -1338,7 +1356,7 @@ void AWeaponBase::EquipSkinRandomPreset()
 	presetNames = WeaponPresetRowHandle.DataTable->GetRowNames();
 	
 
-	WeaponPresetRowHandle.RowName = presetNames[FMath::RandRange(0, presetNames.Num())];
+	WeaponPresetRowHandle.RowName = presetNames[FMath::RandRange(0, presetNames.Num()-1)];
 
 	FSPreset preset;
 
@@ -1346,6 +1364,30 @@ void AWeaponBase::EquipSkinRandomPreset()
 
 	if (preset.RowHandleSkin.DataTable)
 		SetSkinRowHandle(preset.RowHandleSkin);
+}
+
+void AWeaponBase::TimelineSetting()
+{
+    UCurveFloat* attachmentDownScale;
+    Helpers::GetAssetDynamic(&attachmentDownScale, TEXT("CurveFloat'/Game/Projz/Curve/AttachmentDown.AttachmentDown'"));
+	TLineScaleAttachmentsDown->AddInterpFloat(attachmentDownScale, AttachmentsDownFunction);
+	TLineScaleAttachmentsDown->SetLooping(false);
+
+    UCurveFloat* attachmentUpScale;
+    Helpers::GetAsset(&attachmentUpScale, TEXT("CurveFloat'/Game/Projz/Curve/AttachmentUp.AttachmentUp'"));
+    TLineScaleAttachmentsUp->AddInterpFloat(attachmentUpScale, AttachmentsUpFunction);
+	TLineScaleAttachmentsUp->SetLooping(false);
+}
+
+void AWeaponBase::SetAttachmentsScale(float Scale)
+{
+	FVector ScaleVector;
+	ScaleVector = FVector(Scale);
+
+	SMeshScope->SetRelativeScale3D(ScaleVector);
+	SMeshLaser->SetRelativeScale3D(ScaleVector);
+	SMeshGrip->SetRelativeScale3D(ScaleVector);
+	SMeshMuzzle->SetRelativeScale3D(ScaleVector);
 }
 
 void AWeaponBase::OnInteracted(IICharacter* InteractionOwner)
@@ -1360,6 +1402,83 @@ void AWeaponBase::OnRandomizePreset()
 
 void AWeaponBase::OnRandomizePresetCore()
 {
+	TLineScaleAttachmentsDown->PlayFromStart();
+	UKismetSystemLibrary::RetriggerableDelay(GetWorld(), TLineScaleAttachmentsDown->GetTimelineLength(), FLatentActionInfo());
+	EquipRandomScope();
+	EquipRandomMuzzle();
+	EquipRandomGrip();
+	EquipRandomLaser();
 
+	OnRandomizeAttachments();
+
+	FinalizeAttachmentChange();
+}
+
+void AWeaponBase::EquipRandomScope()
+{
+	TArray<FName> rowNames = WeaponPresetOverride.Attachments.RowHandleMeshScope.DataTable->GetRowNames();
+	UpdateScopefromName(rowNames[FMath::RandRange(0, rowNames.Num()-1)]);
+}
+
+void AWeaponBase::EquipRandomMuzzle()
+{
+    TArray<FName> rowNames = WeaponPresetOverride.Attachments.RowHandleMeshMuzzle.DataTable->GetRowNames();
+	int32 randNum = FMath::RandRange(0, rowNames.Num()-1);
+	FDataTableRowHandle q;
+	MAKEDATATABLEROWHANDLE(q, WeaponPresetOverride.Attachments.RowHandleMeshMuzzle.DataTable, rowNames[randNum]);
+    FDataTableRowHandle w;
+	MAKEDATATABLEROWHANDLE(w, WeaponInformation.SettingsAttachments.DataTableSettingsMuzzle, rowNames[randNum]);
+
+	OnSwapAttachmentMuzzle(q, w);
+}
+
+void AWeaponBase::EquipRandomGrip()
+{
+    TArray<FName> rowNames = WeaponPresetOverride.Attachments.RowHandleMeshMuzzle.DataTable->GetRowNames();
+	int32 randNum = FMath::RandRange(0, rowNames.Num()-1);
+
+	FDataTableRowHandle q;
+	MAKEDATATABLEROWHANDLE(q, WeaponPresetOverride.Attachments.RowHandleMeshGrip.DataTable, rowNames[randNum]);
+	FDataTableRowHandle w;
+	MAKEDATATABLEROWHANDLE(w, WeaponInformation.SettingsAttachments.DataTableSettingsGrip, rowNames[randNum]);
+
+	OnSwapattachmentGrip(q, w);
+}
+
+void AWeaponBase::EquipRandomLaser()
+{
+    TArray<FName> rowNames = WeaponPresetOverride.Attachments.RowHandleMeshLaser.DataTable->GetRowNames();
+    int32 randNum = FMath::RandRange(0, rowNames.Num()-1);
+
+	FDataTableRowHandle q;
+	MAKEDATATABLEROWHANDLE(q, WeaponPresetOverride.Attachments.RowHandleMeshLaser.DataTable, rowNames[randNum]);
+	FDataTableRowHandle w;
+	MAKEDATATABLEROWHANDLE(w, WeaponInformation.SettingsAttachments.DataTableSettingsLaser, rowNames[randNum]);
+
+	OnSwapAttachmentLaser(q, w);
+}
+
+void AWeaponBase::OnRandomizeAttachments()
+{
+
+}
+
+void AWeaponBase::OnMontagePlay(FName Name, bool FirstPerson)
+{
+	FSAnimation* findAnim = WeaponInformation.SettingsAnimationBlueprint.DataTableMontagesWeapon->FindRow<FSAnimation>(Name, "");
+	if (findAnim)
+	{
+		UAnimMontage* montage = (FirstPerson ? findAnim->SequenceBaseFirstPerson : findAnim->SequenceBaseThirdPerson);
+
+		Weapon->GetAnimInstance()->Montage_Play(montage);
+	}
+
+
+	FSSound* findSound = WeaponInformation.DataTableSoundCues->FindRow<FSSound>(Name, "");
+	if (findSound)
+	{
+		UKismetSystemLibrary::Delay(GetWorld(), findSound->Delay, FLatentActionInfo());
+		AudioComponentPlaying = UGameplayStatics::SpawnSound2D(GetWorld(), findSound->SoundCue);
+	}
 }
 

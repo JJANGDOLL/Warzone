@@ -38,4 +38,5 @@ public:
 	virtual void OnWeaponDrop(FVector ThrowImpulse, FVector AngularImpulse) = 0;
 	virtual void OnEquipSavedLoadout() = 0;
 	virtual void OnRandomizePreset() = 0;
+	virtual void OnMontagePlay(FName Name, bool FirstPerson) = 0;
 };

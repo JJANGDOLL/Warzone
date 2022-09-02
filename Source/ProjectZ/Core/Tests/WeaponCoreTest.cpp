@@ -2,4 +2,19 @@
 
 
 #include "Core/Tests/WeaponCoreTest.h"
+#include "Utilities/Global.h"
 
+void AWeaponCoreTest::BeginPlay()
+{
+    Super::BeginPlay();
+
+    GetWorldTimerManager().SetTimer(TestActionHandle, this, &AWeaponCoreTest::TestAction, 2.0f, true);
+
+    PrintLine();
+}
+
+void AWeaponCoreTest::Test()
+{
+
+    PrintLine();
+}

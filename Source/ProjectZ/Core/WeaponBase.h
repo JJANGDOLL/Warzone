@@ -7,6 +7,7 @@
 #include "Interfaces/IWeapon.h"
 #include "Interfaces/IInteractable.h"
 #include "Core/Defines/Structs.h"
+#include "Components/TimelineComponent.h"
 #include "WeaponBase.generated.h"
 
 class UWeaponAttachmentBase;
@@ -66,6 +67,9 @@ private:
 
     UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
 	UWeaponAttachmentBase* SMeshScope;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+	class UViewmodelHelper* ViewmodelHelper;
 
 
 protected:
@@ -395,15 +399,38 @@ public:
 	void FinalizeAttachmentChange();
 	void EquipSkinRandomPreset();
 
+	void TimelineSetting();
+
+	UFUNCTION()
+	void SetAttachmentsScale(float Scale);
+
 public:
+
 	class UTimelineComponent* TLineScaleAttachmentsDown;
     class UTimelineComponent* TLineScaleAttachmentsUp;
+
+private:
+	FOnTimelineFloat AttachmentsDownFunction;
+    FOnTimelineFloat AttachmentsUpFunction;
 
 public:
     virtual void OnInteracted(class IICharacter* InteractionOwner) override;
 
 public:
+	UFUNCTION(BlueprintCallable)
 	virtual void OnRandomizePreset() override;
+
 	void OnRandomizePresetCore();
+	void EquipRandomScope();
+	void EquipRandomMuzzle();
+	void EquipRandomGrip();
+	void EquipRandomLaser();
+	void OnRandomizeAttachments();
+
+public:
+	virtual void OnMontagePlay(FName Name, bool FirstPerson) override;
+
+public:
+	class UAudioComponent* AudioComponentPlaying;
 };
 
