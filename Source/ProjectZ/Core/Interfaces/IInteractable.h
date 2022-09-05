@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "../Defines/Enums.h"
 #include "IInteractable.generated.h"
 
 // This class does not need to be modified.
@@ -24,4 +25,6 @@ class PROJECTZ_API IIInteractable
 public:
 	virtual void OnSetCanInteract(bool Value) = 0;
 	virtual void OnInteracted(class IICharacter* InteractionOwner) = 0;
+	virtual bool CanInteract() = 0;
+	virtual EInteractionType GetIteractionType() = 0;
 };

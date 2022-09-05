@@ -4,12 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Core/Defines/Structs.h"
-#include "ICharacter.generated.h"
+#include "IInventoryTarget.generated.h"
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UICharacter : public UInterface
+class UIInventoryTarget : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -17,12 +16,11 @@ class UICharacter : public UInterface
 /**
  * 
  */
-class PROJECTZ_API IICharacter
+class PROJECTZ_API IIInventoryTarget
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void OnPickUp() = 0;
-	virtual bool TryStartAbility(FSGameAbility Ability) = 0;
+	virtual class USkeletalMeshComponent* GetViewmodelArms() = 0;
 };

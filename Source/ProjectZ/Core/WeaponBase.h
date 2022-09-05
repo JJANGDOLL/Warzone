@@ -82,11 +82,30 @@ public:
 
 public:
 	void OnConstruction(const FTransform& Transform) override;
-
-
 	void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
 
-// OnConstruction
+
+
+	void OnChangeSettingsPhysical(FDataTableRowHandle RowHandle) override;
+
+
+	FSAbilities GetCharacterAbilities() override;
+
+
+	UDataTable* GetCharacterAnimationMontages() override;
+
+
+	void OnMontageStopAll(float BlendTime) override;
+
+
+	void OnStopAudioPlaying() override;
+
+public:
+	// IIInteractable
+	bool CanInteract() override;
+	EInteractionType GetIteractionType() override;
+
+	// OnConstruction
 public:
 	void UpdateSocketAttachments();
 

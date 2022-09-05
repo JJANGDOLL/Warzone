@@ -912,3 +912,27 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     class USoundCue* SoundCue;
 };
+
+USTRUCT(BlueprintType)
+struct FSInventoryStartingItem : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bRandomize;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FDataTableRowHandle InventorySlot;
+};
+
+USTRUCT(BlueprintType)
+struct FSInventorySlot : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class AActor> Item;
+};
+

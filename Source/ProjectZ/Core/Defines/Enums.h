@@ -21,3 +21,18 @@ enum class EFireMode : uint8
     BurstHold,
     Safe
 };
+
+UENUM(BlueprintType)
+enum class EInteractionType : uint8
+{
+    None,
+    WeaponPickup,
+    AmmunitionRefill
+};
+
+UENUM(BlueprintType)
+enum class EWeaponHolsterState : uint8
+{
+    Available,
+    Holstered
+};

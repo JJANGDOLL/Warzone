@@ -30,6 +30,8 @@
 #include "Sound/SoundCue.h"
 #include "Utilities/ViewmodelHelper.h"
 #include "Curves/CurveFloat.h"
+#include "Defines/Enums.h"
+#include "Components/AudioComponent.h"
 
 #define MAKEDATATABLEROWHANDLE(Out, Table, Name) \
 Out.DataTable = Table; \
@@ -149,6 +151,43 @@ void AWeaponBase::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyC
     Super::PostEditChangeProperty(PropertyChangedEvent);
 
 // 	OnConstruction(this->GetTransform());
+}
+
+void AWeaponBase::OnChangeSettingsPhysical(FDataTableRowHandle RowHandle)
+{
+	OnChangeSettingsPhysicalBody(RowHandle);
+	OnChangeSettingsPhysicalAttachments(RowHandle);
+}
+
+FSAbilities AWeaponBase::GetCharacterAbilities()
+{
+	return PlayerCharacterAbilities;
+}
+
+UDataTable* AWeaponBase::GetCharacterAnimationMontages()
+{
+	return WeaponInformation.SettingsAnimationBlueprint.DataTableMontagesCharacter;
+}
+
+void AWeaponBase::OnMontageStopAll(float BlendTime)
+{
+	Weapon->GetAnimInstance()->Montage_Stop(BlendTime);
+}
+
+void AWeaponBase::OnStopAudioPlaying()
+{
+	if (AudioComponentPlaying)
+		AudioComponentPlaying->Stop();
+}
+
+bool AWeaponBase::CanInteract()
+{
+	return bCanBePickedUp;
+}
+
+EInteractionType AWeaponBase::GetIteractionType()
+{
+	return EInteractionType::WeaponPickup;
 }
 
 void AWeaponBase::UpdateSocketAttachments()

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 #include "Engine/DataTable.h"
+#include "Core/Defines/Structs.h"
 #include "IWeapon.generated.h"
 
 // This class does not need to be modified.
@@ -39,4 +40,9 @@ public:
 	virtual void OnEquipSavedLoadout() = 0;
 	virtual void OnRandomizePreset() = 0;
 	virtual void OnMontagePlay(FName Name, bool FirstPerson) = 0;
+	virtual void OnChangeSettingsPhysical(FDataTableRowHandle RowHandle) = 0;
+	virtual FSAbilities GetCharacterAbilities() = 0;
+	virtual UDataTable* GetCharacterAnimationMontages() = 0;
+	virtual void OnMontageStopAll(float BlendTime) = 0;
+	virtual void OnStopAudioPlaying() = 0;
 };
