@@ -4,3 +4,4 @@
 #include "Core/Interfaces/ICharacter.h"
 
 // Add default functionality here for any IICharacter functions that are not pure virtual.
+

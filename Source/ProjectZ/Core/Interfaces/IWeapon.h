@@ -9,7 +9,7 @@
 #include "IWeapon.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI)
+UINTERFACE(MinimalAPI, meta = (CannotImplementInterfaceInBlueprint))
 class UIWeapon : public UInterface
 {
 	GENERATED_BODY()
@@ -45,4 +45,10 @@ public:
 	virtual UDataTable* GetCharacterAnimationMontages() = 0;
 	virtual void OnMontageStopAll(float BlendTime) = 0;
 	virtual void OnStopAudioPlaying() = 0;
+	virtual FSAnimationSettings GetSettingsAnimation() = 0;
+	virtual class USkeletalMeshComponent* GetStaticMeshBody() = 0;
+	virtual class UDataTable* GetCharacterAnimationPoses() = 0;
+	virtual FSScope GetSettingsScope() = 0;
+	virtual FSGrip GetSettingsGrip() = 0;
+	virtual FSMovement GetCharacterSettingsMovement() = 0;
 };

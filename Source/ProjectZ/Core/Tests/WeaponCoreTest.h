@@ -18,6 +18,8 @@ class PROJECTZ_API AWeaponCoreTest : public AWeaponBase
 
 
 protected:
+	AWeaponCoreTest();
+
 	void BeginPlay() override;
 
 public:
@@ -29,4 +31,7 @@ public:
 
 public:
 	FTimerHandle TestActionHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "", meta = (AllowPrivateAccess = true))
+	FName WeaponBodyName = TEXT("");
 };

@@ -45,7 +45,7 @@ public:
 	bool bSpawnedInitial;
 	TArray<FSInventoryStartingItem> StartingItems;
 	TArray<class AActor*> Inventory;
-	int32 EquippedIndexAtStart;
+	int32 EquippedIndexAtStart = 0;
 	class AActor* Equipped;
 	FEquippedDelegate OnEquipped;
 	bool bStarted;
@@ -58,7 +58,7 @@ public:
 	void EventMulticastUnholster();
 	void EventUnholster();
 	void EventUnholsterCore();
-	void GetAnimationMontagefromDataTable(UDataTable* Table, FName Name, bool& OutIsValid, UAnimMontage** OutMontageFirstPerson, UAnimMontage** OutMontageThirdPerson);
+	void GetAnimationMontagefromDataTable(UDataTable* Table, FName Name, bool& OutIsValid, UAnimSequenceBase** OutMontageFirstPerson, UAnimSequenceBase** OutMontageThirdPerson);
 	class USkeletalMeshComponent* GetCharacterMesh();
 	void EventSetFullyHolstered(bool InFullyHolstered);
 
@@ -98,13 +98,18 @@ public:
 	int32 NextAdded;
 	bool bEquippingHolster;
 	int32 EquippingItem;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "", meta = (AllowPrivateAccess = true))
 	FSGameAbility SwappingAbility;
+
 	bool bRefreshUnholster;
 	FName HolsterName;
 
 public:
 	void EventServerTryPickupItem(AActor* Item);
 	void TryPickUpItem(AActor* Item);
+
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool HasSpace();
 
 public:
@@ -124,5 +129,8 @@ public:
 public:
 	void EventServerUnholster();
 	FName GetNameMontageUnholster();
+
+public:
+	bool bFullyHolstered;
 
 };

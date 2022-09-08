@@ -233,7 +233,8 @@ void AWeaponBase::CacheWeaponPresetLoadAssetConstruct()
 	Helpers::GetAsset(&weaponPresetDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Presets.DT_WEP_CPP_Presets'"));
 	verifyf(weaponPresetDT, L"WeaopnPresetDT invalid asset");
 	WeaponPresetRowHandle.DataTable = weaponPresetDT;
- 	WeaponPresetRowHandle.RowName = weaponPresetDT->GetRowNames()[0];
+	if(weaponPresetDT->GetRowNames().Num() > 0)
+		WeaponPresetRowHandle.RowName = weaponPresetDT->GetRowNames()[0];
 
 	CacheWeaponPreset();
 }
@@ -256,7 +257,8 @@ void AWeaponBase::CacheWeaponInformationLoadAssetConstruct()
     Helpers::GetAsset(&weaponInfoDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Information.DT_WEP_CPP_Information'"));
     verifyf(weaponInfoDT, L"WeaponInfoDT invalid asset");
 	WeaponInfoRowHandle.DataTable = weaponInfoDT;
-	WeaponInfoRowHandle.RowName = weaponInfoDT->GetRowNames()[0];
+	if(weaponInfoDT->GetRowNames().Num() > 0)
+		WeaponInfoRowHandle.RowName = weaponInfoDT->GetRowNames()[0];
 
 	CacheWeaponInformation();
 }
@@ -301,7 +303,8 @@ void AWeaponBase::TryUpdateAttachmentIronsightsLoadAssetConstruct()
     Helpers::GetAsset(&weaponIronsightDT, TEXT("DataTable'/Game/Projz/DataTables/DT_WEP_CPP_Ironsights.DT_WEP_CPP_Ironsights'"));
     verifyf(weaponIronsightDT, L"WeaponIronDT invalid asset");
 	IronsightSettingsRowHandle.DataTable = weaponIronsightDT;
-	IronsightSettingsRowHandle.RowName = weaponIronsightDT->GetRowNames()[1];
+	if(weaponIronsightDT->GetRowNames().Num() > 0)
+		IronsightSettingsRowHandle.RowName = weaponIronsightDT->GetRowNames()[0];
 
 	TryUpdateAttachmentIronsights();
 }
@@ -1507,7 +1510,7 @@ void AWeaponBase::OnMontagePlay(FName Name, bool FirstPerson)
 	FSAnimation* findAnim = WeaponInformation.SettingsAnimationBlueprint.DataTableMontagesWeapon->FindRow<FSAnimation>(Name, "");
 	if (findAnim)
 	{
-		UAnimMontage* montage = (FirstPerson ? findAnim->SequenceBaseFirstPerson : findAnim->SequenceBaseThirdPerson);
+		UAnimMontage* montage= FirstPerson ? findAnim->SequenceBaseFirstPerson : findAnim->SequenceBaseThirdPerson;
 
 		Weapon->GetAnimInstance()->Montage_Play(montage);
 	}
@@ -1521,3 +1524,37 @@ void AWeaponBase::OnMontagePlay(FName Name, bool FirstPerson)
 	}
 }
 
+FSAnimationSettings AWeaponBase::GetSettingsAnimation()
+{
+	return AnimationSettings;
+}
+
+class USkeletalMeshComponent* AWeaponBase::GetStaticMeshBody()
+{
+	return Weapon;
+}
+
+class UDataTable* AWeaponBase::GetCharacterAnimationPoses()
+{
+	return WeaponInformation.SettingsAnimationBlueprint.DataTableMontagesCharacter;
+}
+
+FSScope AWeaponBase::GetSettingsScope()
+{
+	return ScopeSettings;
+}
+
+FSGrip AWeaponBase::GetSettingsGrip()
+{
+	return GripSettings;
+}
+
+FSMovement AWeaponBase::GetCharacterSettingsMovement()
+{
+	FDataTableRowHandle retHandle;
+
+	if (!WeaponInformation.RowHandleSettingsCharacterMovement.DataTable)
+		return FSMovement();
+
+	return *(WeaponInformation.RowHandleSettingsCharacterMovement.GetRow<FSMovement>(""));
+}

@@ -451,5 +451,14 @@ public:
 
 public:
 	class UAudioComponent* AudioComponentPlaying;
+
+public:
+	virtual FSAnimationSettings GetSettingsAnimation() override;
+    virtual class USkeletalMeshComponent* GetStaticMeshBody() override;
+	virtual class UDataTable* GetCharacterAnimationPoses() override;
+	virtual FSScope GetSettingsScope() override;
+	virtual FSGrip GetSettingsGrip() override;
+	virtual FSMovement GetCharacterSettingsMovement() override;
+
 };
 

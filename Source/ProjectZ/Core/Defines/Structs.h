@@ -9,7 +9,7 @@
 #include "Engine/CollisionProfile.h"
 #include "Structs.generated.h"
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FWeaponSettings
 {
     GENERATED_BODY()
@@ -21,7 +21,7 @@ public:
 
 
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSSpeed
 {
     GENERATED_BODY()
@@ -43,7 +43,7 @@ public:
     float FootstepDistance;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSSpeeds
 {
     GENERATED_BODY()
@@ -66,7 +66,7 @@ public:
     FSSpeed SpeedMultiplierShooting;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSMovement
 {
     GENERATED_BODY()
@@ -79,7 +79,7 @@ public:
     float SpeedMultiplierFiringRevertAddedDelay = 0.05;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSViewmodelAnimatedOffset
 {
     GENERATED_BODY()
@@ -93,7 +93,7 @@ public:
     FVector LandingRotation;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSAttachmentMeshes
 {
     GENERATED_BODY()
@@ -121,7 +121,7 @@ public:
         FDataTableRowHandle RowHandleMeshGrip;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSPreset : public FTableRowBase
 {
     GENERATED_BODY()
@@ -139,7 +139,7 @@ public:
         FSAttachmentMeshes Attachments;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSSkin : public FTableRowBase
 {
     GENERATED_BODY()
@@ -173,7 +173,7 @@ public:
         FDataTableRowHandle RowHandleSettingsFlashlight;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSLasersight : public FTableRowBase
 {
     GENERATED_BODY()
@@ -201,7 +201,7 @@ public:
         UMaterialInstance* LasersightDotMaterial;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSFlashlight : public FTableRowBase
 {
     GENERATED_BODY()
@@ -227,7 +227,7 @@ public:
         UMaterialInstance* LightFunctionMaterial;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSAttachmentSettings
 {
     GENERATED_BODY()
@@ -246,7 +246,7 @@ public:
     class UDataTable* DataTableSettingsGrip;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSAnimBlueprintSettings
 {
     GENERATED_BODY()
@@ -265,7 +265,7 @@ public:
     class UDataTable* DataTableMontagesWeapon;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSInformation : public FTableRowBase
 {
     GENERATED_BODY()
@@ -300,7 +300,7 @@ public:
     class UDataTable* DataTableSoundCues;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSTexture
 {
     GENERATED_BODY()
@@ -310,7 +310,7 @@ public:
     class UTexture2D* Texture;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSMagazine : public FTableRowBase
 {
     GENERATED_BODY()
@@ -356,7 +356,7 @@ public:
     class UMaterialInstanceConstant* AmmunitionVisualHiddenMaterial;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSIronsights : public FTableRowBase
 {
     GENERATED_BODY()
@@ -372,7 +372,7 @@ public:
     FDataTableRowHandle RowHandleSettingsScope;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSBlend
 {
     GENERATED_BODY()
@@ -388,7 +388,7 @@ public:
     float TimedValue;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSDirectionVector
 {
     GENERATED_BODY()
@@ -401,7 +401,7 @@ public:
     FVector Vertical;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSDirectionTransform
 {
     GENERATED_BODY()
@@ -414,7 +414,7 @@ public:
     FSDirectionVector Rotation;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSSPringInterpVector
 {
     GENERATED_BODY()
@@ -430,7 +430,7 @@ public:
     float Mass;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSLagValues
 {
     GENERATED_BODY()
@@ -446,7 +446,7 @@ public:
     FSSPringInterpVector SpringInterpolation;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSLowered
 {
     GENERATED_BODY()
@@ -471,7 +471,7 @@ public:
     bool RunningAnimationOffsetUsed;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSLean
 {
     GENERATED_BODY()
@@ -484,7 +484,7 @@ public:
     class UCurveVector* CurveRotation;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSAnimationSettings : public FTableRowBase
 {
     GENERATED_BODY()
@@ -554,7 +554,7 @@ public:
         FSBlend AimingSyncTime;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSMesh : public FTableRowBase
 {
     GENERATED_BODY()
@@ -564,7 +564,7 @@ public:
     class UStaticMesh* Mesh;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSScope : public FTableRowBase
 {
     GENERATED_BODY()
@@ -613,7 +613,7 @@ public:
     float AimedFieldOfViewViewmodel;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSMuzzle : public FTableRowBase
 {
     GENERATED_BODY()
@@ -644,7 +644,7 @@ public:
     FVector FlashLightRelativeLocation;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSLaser : public FTableRowBase
 {
     GENERATED_BODY()
@@ -672,7 +672,7 @@ public:
     bool Lasersight;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSGrip : public FTableRowBase
 {
     GENERATED_BODY()
@@ -685,7 +685,7 @@ public:
     class UAnimSequence* AimPoseOverride;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSRecoilState
 {
     GENERATED_BODY()
@@ -710,7 +710,7 @@ public:
     float RotationMultiplier;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSRecoilStates
 {
     GENERATED_BODY()
@@ -723,7 +723,7 @@ public:
     FSRecoilState RecoilStateAiming;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSRecoil
 {
     GENERATED_BODY()
@@ -736,7 +736,7 @@ public:
     FSRecoilStates RecoilStatesCamera;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSWeaponSettings : public FTableRowBase
 {
     GENERATED_BODY()
@@ -794,7 +794,7 @@ public:
     class UForceFeedbackEffect* ForceFeedbackEffect;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSGameAbility
 {
     GENERATED_BODY()
@@ -813,7 +813,7 @@ public:
     FGameplayTagContainer TagsRemoved;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSAbilities : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -859,7 +859,7 @@ public:
         FSGameAbility AbilityRandomizeWeaponPreset;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSPhysical : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -887,7 +887,7 @@ public:
     bool RenderCustomDepth;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSAnimation : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -900,7 +900,7 @@ public:
     class UAnimMontage* SequenceBaseThirdPerson;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSSound : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -913,7 +913,7 @@ public:
     class USoundCue* SoundCue;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSInventoryStartingItem : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -926,7 +926,7 @@ public:
     FDataTableRowHandle InventorySlot;
 };
 
-USTRUCT(BlueprintType)
+USTRUCT(BlueprintType, Blueprintable)
 struct FSInventorySlot : public FTableRowBase
 {
 	GENERATED_BODY()
@@ -936,3 +936,64 @@ public:
 	TSubclassOf<class AActor> Item;
 };
 
+USTRUCT(BlueprintType, Blueprintable)
+struct FSClamps : public FTableRowBase
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FVector2D ClampsYaw;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+        FVector2D ClampsPitch;
+};
+
+USTRUCT(BlueprintType, Blueprintable)
+struct FSCurveFloat : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName FloatTrackName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UCurveFloat* FloatCurve;
+};
+
+
+USTRUCT(BlueprintType, Blueprintable)
+struct FSFreeLook : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool Enabled;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    bool DisableWeaponLagLooking;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    float CameraInterpolationSpeed;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSClamps CameraClamps;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FSCurveFloat CameraResetTimeline;
+};
+
+USTRUCT(BlueprintType, Blueprintable)
+struct FSCurveVector : public FTableRowBase
+{
+	GENERATED_BODY()
+	
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    FName VectorTrackName;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UCurveVector* VectorCurve;
+};

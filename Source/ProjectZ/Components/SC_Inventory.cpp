@@ -13,6 +13,8 @@
 #include "Camera/CameraComponent.h"
 #include "Core/Interfaces/IInteractable.h"
 #include "GameFramework/Actor.h"
+#include "GameplayTagContainer.h"
+#include "GameplayTagsManager.h"
 
 // Sets default values for this component's properties
 USC_Inventory::USC_Inventory()
@@ -22,6 +24,56 @@ USC_Inventory::USC_Inventory()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// ...
+	EquippedIndexAtStart = 0;
+
+	UDataTable* invDT;
+	Helpers::GetAsset(&invDT, TEXT("DataTable'/Game/Projz/DataTables/DT_LPSP_CPP_Inventory.DT_LPSP_CPP_Inventory'"));
+
+	FSInventoryStartingItem item1;
+	item1.bRandomize = false;
+	item1.InventorySlot.DataTable = invDT;
+	item1.InventorySlot.RowName = TEXT("Assault-Rifle-01");
+	StartingItems.Add(item1);
+
+	InventoryCapacity = 2;
+
+	bCanDropItems = true;
+
+	DroppingForce = 700.f;
+
+	DroppingForceAngular = FVector(100.f, 0.f, 0.f);
+
+	InitialUnholsterDelay = 0.5f;
+
+	HolsterState = EWeaponHolsterState::Holstered;
+
+	bStarted = false;
+
+	bFullyHolstered = true;
+
+	SwappingAbility.TagsRequired.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Active.Bolt Actioning")));
+
+    SwappingAbility.TagsRemoved.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Allowed.Aim")));
+    SwappingAbility.TagsRemoved.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Allowed.Grenade Throw")));
+    SwappingAbility.TagsRemoved.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Allowed.Inspect")));
+    SwappingAbility.TagsRemoved.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Allowed.Knife Attack")));
+    SwappingAbility.TagsRemoved.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Allowed.Reload")));
+    SwappingAbility.TagsRemoved.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Allowed.Fire")));
+    SwappingAbility.TagsRemoved.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Allowed.Bolt Action")));
+    SwappingAbility.TagsRemoved.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Allowed.Interact")));
+    SwappingAbility.TagsRemoved.AddTag(UGameplayTagsManager::Get().RequestGameplayTag(TEXT("Character.Abilities.Allowed.Swapping")));
+
+	UnholsterName = TEXT("Unholster");
+
+	HolsterName = TEXT("Unholster");
+
+	bSpawnedInitial = false;
+
+	bRefreshUnholster = true;
+
+	bEquippingHolster = false;
+
+	EquippingItem = 0;
 }
 
 
@@ -35,6 +87,7 @@ void USC_Inventory::BeginPlay()
 
     UKismetSystemLibrary::Delay(GetWorld(), InitialUnholsterDelay, FLatentActionInfo());
 
+	EventServerUnholsterWithName(TEXT("Unholster"));
 }
 
 
@@ -192,7 +245,8 @@ void USC_Inventory::EventUnholsterCore()
 
 	bool isValid;
 	UAnimMontage* montageFirstPerson = nullptr;
-	GetAnimationMontagefromDataTable(charAnimDT, UnholsterName, isValid, &montageFirstPerson, nullptr);
+	UAnimSequenceBase* seq = Cast<UAnimSequenceBase>(montageFirstPerson);
+	GetAnimationMontagefromDataTable(charAnimDT, UnholsterName, isValid, &seq, nullptr);
 
 	if (OnHolstering.IsBound())
 		OnHolstering.Broadcast();
@@ -204,7 +258,7 @@ void USC_Inventory::EventUnholsterCore()
 	weaponItf->OnMontagePlay(UnholsterName, true);
 }
 
-void USC_Inventory::GetAnimationMontagefromDataTable(UDataTable* Table, FName Name, bool& OutIsValid, UAnimMontage** OutMontageFirstPerson, UAnimMontage** OutMontageThirdPerson)
+void USC_Inventory::GetAnimationMontagefromDataTable(UDataTable* Table, FName Name, bool& OutIsValid, UAnimSequenceBase** OutMontageFirstPerson, UAnimSequenceBase** OutMontageThirdPerson)
 {
     OutIsValid = false;
     OutMontageFirstPerson = nullptr;
@@ -461,9 +515,10 @@ void USC_Inventory::EventHolsterCore()
 
 	bool bValid;
 
-	UAnimMontage* montageFirstPerson;
+	UAnimMontage* montageFirstPerson = nullptr;
+	UAnimSequenceBase* seq = Cast<UAnimSequenceBase>(montageFirstPerson);
 
-	GetAnimationMontagefromDataTable(weaponItf->GetCharacterAnimationMontages(), HolsterName, bValid, &montageFirstPerson, nullptr);
+	GetAnimationMontagefromDataTable(weaponItf->GetCharacterAnimationMontages(), HolsterName, bValid, &seq, nullptr);
 
 	if (OnHolstering.IsBound())
 		OnHolstering.Broadcast();

@@ -4,6 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Defines/Enums.h"
+#include "Defines/Structs.h"
+#include "Engine/EngineTypes.h"
+#include "Interfaces/ICharacter.h"
+#include "Components/TimelineComponent.h"
 #include "CharacterBase.generated.h"
 
 class USpringArmComponent;
@@ -11,15 +16,53 @@ class USceneComponent;
 class USkeletalMeshComponent;
 class UStaticMeshComponent;
 class UCameraComponent;
+class USC_Inventory;
+class UTimelineComponent;
 
 UCLASS()
-class PROJECTZ_API ACharacterBase : public ACharacter
+class PROJECTZ_API ACharacterBase : public ACharacter, public IICharacter
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this character's properties
 	ACharacterBase();
+
+
+
+	int32 GetFieldOfView() override;
+
+
+	bool IsAiming() override;
+
+
+	bool IsRunning() override;
+
+
+	class UCameraComponent* GetCameraComponent() override;
+
+
+	FVector2D GetInputLook() override;
+
+
+	FVector2D GetInputMovement() override;
+
+public:
+	void OnPickUp() override;
+
+public:
+	FHitResult HitResultInteractionTrace;
+
+
+public:
+	bool TryStartAbility(FSGameAbility Ability) override;
+	bool TryStartGameAbility(FSGameAbility Ability, FGameplayTagContainer Container);
+	bool CanStartGameAbility(FSGameAbility Ability, FGameplayTagContainer Container, UWorld* World);
+	void StartGameAbility(FSGameAbility Ability, FGameplayTagContainer Container, UWorld* World);
+	void RemoveGameplayTagContainer(FGameplayTagContainer Ability, FGameplayTagContainer Container, UWorld* World);
+
+public:
+	FGameplayTagContainer AbilityTags;
 
 public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
@@ -44,7 +87,7 @@ public:
 	UStaticMeshComponent* SMeshGoggles;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
-	UStaticMeshComponent* SMeshHelment;
+	UStaticMeshComponent* SMeshHelmet;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* SMeshHeadset;
@@ -52,20 +95,19 @@ public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
 	UCameraComponent* Camera;
 
-	// Inventory
-	//..
-	//..
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+	USC_Inventory* Inventory;
 
-    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
 	USkeletalMeshComponent* ReplicatedCharacter;
 
-    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
 	USceneComponent* ReplicatedHeadSocket;
 
-    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* Helmet;
 
-    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* Headset;
 
     UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
@@ -83,6 +125,23 @@ public:
     UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
 	UStaticMeshComponent* BackpackmeshRocket02;
 
+    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+	UTimelineComponent* TLineResetCamera;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+    UTimelineComponent* TLineViewmodelJump;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+    UTimelineComponent* TLineViewmodelLand;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+    UTimelineComponent* TLineViewmodelFall;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+    UTimelineComponent* TLineCameraJump;
+
+    UPROPERTY(BlueprintReadWrite, Category = "Projz | Comp", meta = (AllowPrivateAccess = true))
+    UTimelineComponent* TLineCameraLand;
 
 protected:
 	// Called when the game starts or when spawned
@@ -98,7 +157,91 @@ public:
 
 public:
 	FVector GetViewLocation();
+	void UpdateHeadgearVisibility();
 
 public:
 	FVector FirstPersonViewOffset = FVector(0.f, 0.f, -25.f);
+	bool bShowHelmet;
+	bool bShowHeadset;
+	bool bShowGoggles;
+
+	class UMaterialInstanceConstant* CharacterMaterial;
+	bool bLeftHandMode;
+
+	//begin play
+public:
+	void TrySetFieldOfViewAlph(float Alpha);
+	void SetUpMappingContext();
+	void SetUpAllTimelineCurves();
+	void SetUpCurveFloat(class UTimelineComponent* TimelineComponent, FSCurveFloat Curve);
+	void SetUpCurveVector(class UTimelineComponent* TImelineComponent, FSCurveVector Curve);
+	void CalculatePlayRates();
+	void CacheGInstance();
+	void AddWidgetstoViewport();
+
+public:
+	float FreeLookFlySpeed;
+	float ControlRotationInterpSpeed;
+	float CurrentControlRotationInterpSpeed;
+	TMap<EAmmoType, int32> AmmunitionPoolStarting;
+    TMap<EAmmoType, int32> AmmunitionPoolCurrent;
+
+	FSFreeLook SettingsCameraUnlocking;
+	FSCurveVector ViewmodelJumpLocationCurve;
+	FSCurveVector ViewmodelJumpRotationCurve;
+
+	FSCurveVector ViewmodelLandLocationCurve;
+	FSCurveVector ViewmodelLandRotationCurve;
+
+	FSCurveVector ViewmodelFallLocationCurve;
+	FSCurveVector ViewmodelFallRotationCurve;
+
+	FSCurveVector CameraJumpRotationCurve;
+	FSCurveVector CameraLandRotationJump;
+
+    FVector2D MontagePlayRateRangeMeleeAttack;
+	FVector2D MontagePlayRateRangeGrenadeThrow;
+	FVector2D MontagePlayRateRangeFire;
+	
+	float MontagePlayRateMeleeAttak;
+	float MontagePlayRateGrenadeThrow;
+	float MontagePlayRateFire;
+
+	class UGameInstanceBase* GameInstance;
+
+	TSubclassOf<UUserWidget> WidgetClassInterface;
+
+	FOnTimelineFloat ResetCameraFunc;
+
+    FOnTimelineVector TLineViewmodelFallFunc;
+	FOnTimelineVector TLineViewmodelLandFunc;
+	FOnTimelineVector TLineViewmodelJumpFunc;
+	FOnTimelineVector TLineCameraJumpFunc;
+	FOnTimelineVector TLineCameraLandFunc;
+
+public:
+	UFUNCTION(BlueprintCallable)
+	virtual AActor* GetEquippedItem() override;
+
+public:
+	float FieldOfViewDefault;
+
+public:
+	virtual int32 GetFieldOfViewRunning() override;
+
+public:
+	float FieldOfViewMultiplierRunning;
+
+	bool bAiming;
+	bool bRunning;
+
+
+	virtual float GetAimDuration() override;
+
+	virtual float GetAimSpeedMultiplier() override;
+
+	FSScope WeaponSettingsScope;
+
+    FVector2D Look;
+    FVector2D Movement;
 };

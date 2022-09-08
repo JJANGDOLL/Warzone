@@ -4,6 +4,11 @@
 #include "Core/Tests/WeaponCoreTest.h"
 #include "Utilities/Global.h"
 
+AWeaponCoreTest::AWeaponCoreTest()
+{
+
+}
+
 void AWeaponCoreTest::BeginPlay()
 {
     Super::BeginPlay();
