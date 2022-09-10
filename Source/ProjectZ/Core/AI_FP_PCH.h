@@ -13,6 +13,17 @@
 /**
  * 
  */
+
+class UAnimSequenceBase;
+
+#define TRY_SEQUENCE_TEMPLATE(funcName, rowName, varName) \
+UAnimSequenceBase*  varName; \
+void funcName() \
+{ \
+    FSAnimation *findAnim = SettingsAnimation.DataTableSequences->FindRow<FSAnimation>(rowName, ""); \
+    varName = Cast<UAnimSequenceBase>(findAnim->SequenceBaseFirstPerson); \
+};
+
 UCLASS()
 class PROJECTZ_API UAI_FP_PCH : public UAnimInstance
 {
@@ -152,13 +163,79 @@ public:
 
 public:
 	void CalculateLagValues();
-	void UpdateAimingLocationLag();
 	FVector CustomVectorSpringInterp(FVector Current, FVector Target, float DeltaTime, FSSPringInterpVector Data, FVectorSpringState SpringState);
+
+	void UpdateAimingLocationLag();
+	void UpdateAimingRotationLag();
+
+	void UpdateAimingMovementLocationLag();
+	void UpdateAimingMovementRotationLag();
+
+	void UpdateStandingLocationLag();
+	void UpdateStandingRotationLag();
+
+	void UpdateStandingMovementLocationLag();
+	void UpdateStandingMovementRotationLag();
 
 public:
     float ClampedYawInput;
-    float ClampedMovementInuptHorizontal;
+    float ClampedMovementInuputHorizontal;
     float ClampedMovementInputVertical;
 	FVector AimingLocationLag;
 	FVectorSpringState SpringStateAimingLagLocation;
+
+	FVector AimingRotationLag;
+	FRotator AimingRotationLagRotator;
+    FVectorSpringState SpringStateAimingLagRotation;
+
+	FVector AimingMovementLocationLag;
+	FVectorSpringState SpringStateMovementLagLocation;
+
+	FVector AimingMovementRotationLag;
+	FRotator AimingMovementRotationLagRotator;
+
+	FVector StandingLocationLag;
+	FVectorSpringState SpringStateStandingLagLocation;
+	FVector CurrentLookOffsetLocation;
+	FVectorSpringState SpringStateLookOffsetLocation;
+
+	FVector StandingRotationLag;
+	FVectorSpringState SpringStateStandingLagRotation;
+	FRotator StandingRotationLagRotator;
+	FVector StandingRotationLagLookOffset;
+	FVectorSpringState SpringStateLagLookOffset;
+
+	FVector StandingMovementLocationLag;
+	FVectorSpringState SpringStateStandingMovementLagLocation;
+
+	FVector StandingMovementRotationLag;
+	FVectorSpringState SpringStateStandingMovementLagRotation;
+	FRotator StandingMovementRotationLagRotator;
+
+public:
+	void CalculateOffsetAiming();
+
+public:
+	FTransform OffsetAiming;
+
+public:
+	TRY_SEQUENCE_TEMPLATE(GetSequenceAimingBreathing, TEXT("Aiming-Breathing"), SequenceBreathingAiming);
+    TRY_SEQUENCE_TEMPLATE(GetSequenceAimingWalking, TEXT("Aiming-Walking"), SequenceWalkingAiming);
+    TRY_SEQUENCE_TEMPLATE(GetSequenceStandingBreathing, TEXT("Standing-Breathing"), SequenceBreathingStanding);
+    TRY_SEQUENCE_TEMPLATE(GetSequenceTurning, TEXT("Turning"), SequenceTurning);
+    TRY_SEQUENCE_TEMPLATE(GetSequenceRunning, TEXT("Sprint"), SequenceRunning);
+
+// 	void SetSequenceViaSequencesTable(FName RowName, UAnimSequenceBase* PassedSequence, UAnimSequenceBase* DefaultSequence);
+
+	void TryGetSequence()
+	{
+		if (!SettingsAnimation.DataTableSequences)
+			return;
+
+		GetSequenceAimingBreathing();
+		GetSequenceAimingWalking();
+		GetSequenceStandingBreathing();
+		GetSequenceTurning();
+		GetSequenceRunning();
+	};
 };
