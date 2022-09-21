@@ -9,21 +9,50 @@
 /**
  * 
  */
+class UAnimSequenceBase;
+
 UCLASS()
 class PROJECTX_API UAnimInst_CharacterBase : public UAnimInstance
 {
 	GENERATED_BODY()
+
 	
 public:
+
+	UAnimInst_CharacterBase();
+
 	void NativeBeginPlay() override;
 	void NativeUpdateAnimation(float DeltaSeconds) override;
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | AnimSeq", meta = (AllowPrivateAccess = true))
-	UAnimSequence* PoseIdle;
+	UAnimSequenceBase* PoseIdle;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | AnimSeq", meta = (AllowPrivateAccess = true))
-    UAnimSequence* PoseAim;
+    UAnimSequenceBase* PoseAim;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    bool bAiming;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    FTransform AimOffset;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    bool bRunning;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | AnimSeq", meta = (AllowPrivateAccess = true))
+    UAnimSequenceBase* PoseRun;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    bool bFalling;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    float Vertical;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    float Horizontal;
+
+
 
 private:
 	class ACharacter* Character;

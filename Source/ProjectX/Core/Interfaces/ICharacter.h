@@ -22,5 +22,15 @@ class PROJECTX_API IICharacter
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual class AWeaponBase* GetEquippedWeapon(void) = 0;
+	virtual class AWeaponBase* GetEquippedWeapon() = 0;
+	virtual bool IsAiming() = 0;
+	virtual void Aiming() = 0;
+	virtual void Fire() = 0;
+	virtual void Reload() = 0;
+	virtual void ReloadEmpty() = 0;
+	virtual bool IsRunning() = 0;
+    virtual void Running() = 0;
+	virtual bool IsFalling() = 0;
+	virtual bool IsCrouching() = 0;
+	virtual void Crouching() = 0;
 };

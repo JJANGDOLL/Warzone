@@ -14,4 +14,6 @@ class PROJECTX_API UWeaponMagazine : public UStaticMeshComponent
 {
 	GENERATED_BODY()
 	
+public:
+	UWeaponMagazine();
 };

@@ -35,4 +35,8 @@ public:
 	virtual FVector GetWeaponForward() = 0;
 
 	virtual class UWeaponPoseDA* GetPosesDA() = 0;
+    virtual FTransform GetAimOffset() = 0;
+
+	virtual UAnimSequenceBase* GetEmptyPose() = 0;
+	virtual bool IsEmpty() = 0;
 };

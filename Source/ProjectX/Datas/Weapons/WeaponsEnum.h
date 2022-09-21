@@ -10,6 +10,7 @@ enum class EWeaponTypes : uint8
     ASSAULT_RIFLE_02,
     HANDGUN_01,
     HANDGUN_02,
+    SHOTGUN_01,
     Count UMETA(Hidden)
 };
 

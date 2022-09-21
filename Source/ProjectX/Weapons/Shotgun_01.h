@@ -3,17 +3,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/StaticMeshComponent.h"
-#include "WeaponAttachment.generated.h"
+#include "Core/WeaponBase.h"
+#include "Shotgun_01.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTX_API UWeaponAttachment : public UStaticMeshComponent
+class PROJECTX_API AShotgun_01 : public AWeaponBase
 {
 	GENERATED_BODY()
 	
 public:
-	UWeaponAttachment();
+	AShotgun_01();
 };

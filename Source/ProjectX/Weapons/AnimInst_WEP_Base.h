@@ -14,22 +14,32 @@ class PROJECTX_API UAnimInst_WEP_Base : public UAnimInstance
 {
 	GENERATED_BODY()
 	
+public:
+    UAnimInst_WEP_Base();
+
+    void NativeBeginPlay() override;
+    void NativeUpdateAnimation(float DeltaSeconds) override;
+
 private:
-	UPROPERTY(BlueprintReadOnly, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    class AWeaponBase* Weapon;
+    class IIWeapon* WeaponItf;
+
+private:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
 	bool bRunning;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
 	bool bAiming;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
 	float BlendTimeRunIn;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
 	float BlendTimeRunOut;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
 	bool bEmpty;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
 	UAnimSequenceBase* EmptyAmmoPose;
 };

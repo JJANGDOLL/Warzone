@@ -57,4 +57,7 @@ public:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Pose", meta = (AllowPrivateAccess = true));
     class UWeaponPoseDA* PosesDA;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Pose", meta = (AllowPrivateAccess = true));
+    FTransform AimOffset;
 };

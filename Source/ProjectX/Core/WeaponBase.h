@@ -91,6 +91,7 @@ public:
 	TSubclassOf<ABulletBase> BulletClass;
 	UParticleSystem* Flame;
 	UWeaponPoseDA* PosesDA;
+	FTransform AimOffset;
 
 	void DoNothing();
 	void Reload() override;
@@ -98,10 +99,13 @@ public:
 	void EjectCasing() override;
 	void SpawnBullet() override;
 	void SpawnFlame() override;
+    UAnimSequenceBase* GetEmptyPose();
+    bool IsEmpty();
 
 	FVector GetWeaponForward() override;
 
 	UWeaponPoseDA* GetPosesDA() override;
+	FTransform GetAimOffset() override;
 
     USkeletalMeshComponent* GetWeaponBodyMesh();
     UStaticMeshComponent* GetWeaponMagazineMesh();
@@ -110,5 +114,11 @@ public:
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess=true))
 	float EjectImpulse = 350.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
+	uint8 MaxAmmo = 10;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
+	uint8 CurrentAmmo = 5;
 };
 

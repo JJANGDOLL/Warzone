@@ -75,6 +75,7 @@ void AWeaponBase::MakeWeapon()
 	GetBulletInfo();
 	GetFlame();
 	GetPoses();
+	GetEmptyPose();
 }
 
 void AWeaponBase::GetWeaponNameByWeaponType()
@@ -99,6 +100,9 @@ void AWeaponBase::GetWeaponNameByWeaponType()
         case EWeaponTypes::HANDGUN_02:
             WeaponName = TEXT("Handgun-02");
             break;
+		case EWeaponTypes::SHOTGUN_01:
+			WeaponName = TEXT("Shotgun-01");
+			break;
 		default:
 			break;
 	}
@@ -176,7 +180,17 @@ void AWeaponBase::SpawnBullet()
 
 void AWeaponBase::SpawnFlame()
 {
-	UGameplayStatics::SpawnEmitterAttached(Flame, Weapon, TEXT("SOCKET_Flame"));
+	UGameplayStatics::SpawnEmitterAttached(Flame, Weapon, TEXT("SOCKET_Flame"), FVector::ZeroVector, FRotator::ZeroRotator, FVector(0.25f,  0.25f, 0.25f));
+}
+
+UAnimSequenceBase* AWeaponBase::GetEmptyPose()
+{
+	return WeaponDA->EmptyAmmoPose;
+}
+
+bool AWeaponBase::IsEmpty()
+{
+	return CurrentAmmo == 0;
 }
 
 FVector AWeaponBase::GetWeaponForward()
@@ -187,6 +201,11 @@ FVector AWeaponBase::GetWeaponForward()
 UWeaponPoseDA* AWeaponBase::GetPosesDA()
 {
 	return PosesDA;
+}
+
+FTransform AWeaponBase::GetAimOffset()
+{
+	return WeaponDA->AimOffset;
 }
 
 void AWeaponBase::DoNothing()
