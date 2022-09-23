@@ -20,6 +20,7 @@ ATestCharacter::ATestCharacter()
     AddFeat(Walk, "Walk", ATestCharacter::WalkAct);
     AddFeat(Run, "Run", ATestCharacter::RunAct);
     AddFeat(Aim, "Aim", ATestCharacter::AimAct);
+    AddFeat(Breath, "Breath", ATestCharacter::BreathAct);
 
 //     FName walkFeat = TEXT("Walk");
 //     TestActs.Add(walkFeat, &ATestCharacter::WalkAct);
@@ -69,8 +70,19 @@ void ATestCharacter::AimAct()
     ResetPosition();
 }
 
+void ATestCharacter::BreathAct()
+{
+    if (!isSetted)
+    {
+        Aiming();
+        isSetted = true;
+    }
+    Breath();
+}
+
 void ATestCharacter::DoNothingAct()
 {
+
 }
 
 void ATestCharacter::BeginPlay()

@@ -3,17 +3,15 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "WeaponAttachment.h"
-#include "WeaponMagazine.generated.h"
+#include "GameFramework/PlayerController.h"
+#include "PlayerControllerBase.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTX_API UWeaponMagazine : public UWeaponAttachment
+class PROJECTX_API APlayerControllerBase : public APlayerController
 {
 	GENERATED_BODY()
 	
-public:
-	UWeaponMagazine();
 };

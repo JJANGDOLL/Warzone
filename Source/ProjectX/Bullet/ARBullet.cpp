@@ -15,4 +15,6 @@ AARBullet::AARBullet()
     UParticleSystem* trailParticle;
     Helpers::GetAsset(&trailParticle, TEXT("ParticleSystem'/Game/InfimaGames/LowPolyShooterPack/Art/Effects/Particles/PS_Trail_Bullet.PS_Trail_Bullet'"));
     ParticlesTrail->SetTemplate(trailParticle);
+
+    
 }

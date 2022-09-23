@@ -4,16 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "Components/StaticMeshComponent.h"
+#include "Interfaces/IWeaponAttachment.h"
+#include "Engine/Texture2D.h"
 #include "WeaponAttachment.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTX_API UWeaponAttachment : public UStaticMeshComponent
+class PROJECTX_API UWeaponAttachment : public UStaticMeshComponent, public IIWeaponAttachment
 {
 	GENERATED_BODY()
 	
 public:
 	UWeaponAttachment();
+
+
+
+public:
+	class UTexture2D* GetAttachmentImage() override;
+
+
 };

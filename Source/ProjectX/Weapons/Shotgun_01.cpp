@@ -9,3 +9,9 @@ AShotgun_01::AShotgun_01()
 
     MakeWeapon();
 }
+
+void AShotgun_01::SetWeaponName()
+{
+    WeaponName = TEXT("Shotgun-01");
+
+}

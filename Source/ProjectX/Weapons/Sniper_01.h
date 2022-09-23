@@ -4,18 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Core/WeaponBase.h"
-#include "Assault_Rifle_02.generated.h"
+#include "Sniper_01.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTX_API AAssault_Rifle_02 : public AWeaponBase
+class PROJECTX_API ASniper_01 : public AWeaponBase
 {
 	GENERATED_BODY()
 	
 public:
-	AAssault_Rifle_02();
+	ASniper_01();
+    virtual void SetWeaponName() override;
 
-	virtual void SetWeaponName() override;
 };

@@ -19,6 +19,12 @@
 #include "Animation/AnimMontage.h"
 #include "Animation/AnimCompositeBase.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Widget/MainGameInterface.h"
+#include "Blueprint/UserWidget.h"
+#include "Core/PlayerControllerBase.h"
+#include "Widget/WeaponWidget.h"
+#include "Widget/WeaponTexture.h"
+#include "Weapons/Sniper_01.h"
 
 #define SET_MAX_WALK_SPEED(p) GetCharacterMovement()->MaxWalkSpeed = p;
 
@@ -58,6 +64,9 @@ ACharacterBase::ACharacterBase()
     TestFeature = ECharacterFeature::None;
 
     TestWeapon = AAssault_Rifle_01::StaticClass();
+//     TestWeapon = AAssault_Rifle_02::StaticClass();
+//     TestWeapon = AHandgun_01::StaticClass();
+//     TestWeapon = ASniper_01::StaticClass();
 
     UCharacterMovementComponent* const movementComp = GetCharacterMovement();
     movementComp->CrouchedHalfHeight = 54.f;
@@ -65,10 +74,13 @@ ACharacterBase::ACharacterBase()
     movementComp->GetNavAgentPropertiesRef().bCanCrouch = true;
     movementComp->MaxWalkSpeed = 300.f;
 
-    GetCapsuleComponent()->SetVisibility(true);
-    GetCapsuleComponent()->bHiddenInGame = false;
+//     GetCapsuleComponent()->SetVisibility(true);
+//     GetCapsuleComponent()->bHiddenInGame = false;
 
     ViewOffset = FVector(0.f, 0.f, -25.f);
+
+    PlayerHUD = nullptr;
+    Helpers::GetClass<UMainGameInterface>(&PlayerHUDClass, TEXT("WidgetBlueprint'/Game/ProjectX/Widgets/Main_Game_Interface.Main_Game_Interface_C'"));
 }
 
 void ACharacterBase::OnConstruction(const FTransform& Transform)
@@ -76,6 +88,18 @@ void ACharacterBase::OnConstruction(const FTransform& Transform)
     Super::OnConstruction(Transform);
 
     SpringArm->SetRelativeLocation(GetViewLocation());
+}
+
+void ACharacterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (PlayerHUD)
+    {
+        PlayerHUD->RemoveFromParent();
+
+        PlayerHUD = nullptr;
+    }
+
+    Super::EndPlay(EndPlayReason);
 }
 
 // Called when the game starts or when spawned
@@ -96,6 +120,29 @@ void ACharacterBase::BeginPlay()
 
     if(OnTestFeature)
         GetWorldTimerManager().SetTimer(TestTimerHandle, this, OnTestFeature, TestTerm, true, 2.0f);
+
+    if (IsLocallyControlled() && PlayerHUDClass)
+    {
+        PrintLine();
+        APlayerControllerBase* FPC = GetController<APlayerControllerBase>();
+        if (!FPC)
+        {
+            return;
+        }
+        PlayerHUD = CreateWidget<UMainGameInterface>(FPC, PlayerHUDClass);
+        verifyf(PlayerHUD, L"Invalid HUD");
+        PlayerHUD->AddToPlayerScreen();
+    }
+
+    if (EquippedWeapon)
+    {
+        APlayerControllerBase* FPC = GetController<APlayerControllerBase>();
+        if (!FPC)
+        {
+            return;
+        }
+        UpdateWidget();
+    }
 }
 
 // Called every frame
@@ -131,7 +178,9 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     FInputActionKeyMapping reloadKey("Reload", EKeys::R, 0, 0, 0, 0);
     FInputActionKeyMapping runningKey("Running", EKeys::LeftShift, 0, 0, 0, 0);
     FInputActionKeyMapping jumpKey("Jump", EKeys::SpaceBar, 0, 0, 0, 0);
-    FInputActionKeyMapping crouchKey("Crouching", EKeys::LeftControl, 0, 0, 0, 0);
+    FInputActionKeyMapping crouchKey("Crouching", EKeys::C, 0, 0, 0, 0);
+    FInputActionKeyMapping breathKey("Breath", EKeys::CapsLock, 0, 0, 0, 0);
+    FInputActionKeyMapping firetypeKey("FireType", EKeys::B, 0, 0, 0, 0);
 
     PlayerInputComponent->BindAxis("Forward", this, &ACharacterBase::MoveForward);
     PlayerInputComponent->BindAxis("Back", this, &ACharacterBase::MoveForward);
@@ -144,12 +193,17 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ACharacterBase::Aiming);
     PlayerInputComponent->BindAction("Aim", IE_Released, this, &ACharacterBase::Aiming);
     PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ACharacterBase::Fire);
+    PlayerInputComponent->BindAction("Fire", IE_Released, this, &ACharacterBase::StopFire);
     PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ACharacterBase::Reload);
     PlayerInputComponent->BindAction("Running", IE_Pressed, this, &ACharacterBase::Running);
-    PlayerInputComponent->BindAction("Running", IE_Released, this, &ACharacterBase::Running);
+    PlayerInputComponent->BindAction("Running", IE_Released, this, &ACharacterBase::StopRunning);
     PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
     PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
     PlayerInputComponent->BindAction("Crouching", IE_Pressed, this, &ACharacterBase::Crouching);
+    PlayerInputComponent->BindAction("Crouching", IE_Released, this, &ACharacterBase::Crouching);
+    PlayerInputComponent->BindAction("Breath", IE_Pressed, this, &ACharacterBase::Breath);
+    PlayerInputComponent->BindAction("Breath", IE_Released, this, &ACharacterBase::Breath);
+    PlayerInputComponent->BindAction("FireType", IE_Pressed, this, &ACharacterBase::ChangeFireType);
 
 
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddAxisMapping(forwardKey);
@@ -166,6 +220,8 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(runningKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(jumpKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(crouchKey);
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(breathKey);
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(firetypeKey);
 }
 
 void ACharacterBase::MoveForward(float AxisValue)
@@ -200,6 +256,8 @@ bool ACharacterBase::IsAiming()
 
 void ACharacterBase::Aiming()
 {
+    StopRunning();
+
     bAiming = !bAiming;
 
     SET_MAX_WALK_SPEED(250.f);
@@ -209,6 +267,25 @@ void ACharacterBase::Fire()
 {
     if (!EquippedWeapon)
         return;
+
+    if (bPlayingMontageReloading)
+        return;
+
+    if (EquippedWeapon->GetCurAmmo() <= 0)
+    {
+        return;
+    }
+
+    if (bRunning)
+    {
+        StopRunning();
+        return;
+    }
+
+    if (EquippedWeapon->GetFireType() == EFireType::Brust && bHoldingFire)
+    {
+        return;
+    }
 
     UWeaponPoseDA* poses = EquippedWeapon->GetPosesDA();
 
@@ -251,14 +328,47 @@ void ACharacterBase::Fire()
 
 //     Logger::Log(montage);
 
-    SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
-    EquippedWeapon->Fire();
+    FireDelegate = FTimerDelegate::CreateUObject(this, &ACharacterBase::FireCore, montage);
+
+    switch (EquippedWeapon->GetFireType())
+    {
+
+        case EFireType::Single:
+            FireCore(montage);
+            break;
+        case EFireType::Brust:
+            BrustFireCount = 0;
+            bHoldingFire = true;
+            GetWorldTimerManager().SetTimer(FireHandle, FireDelegate, EquippedWeapon->GetFireInterval() * 0.8f, true, 0.0f);
+            break;
+        case EFireType::Auto:
+            bHoldingFire = true;
+            GetWorldTimerManager().SetTimer(FireHandle, FireDelegate, EquippedWeapon->GetFireInterval(), true, 0.0f);
+            break;
+    }
 }
+
 
 void ACharacterBase::Reload()
 {
+    if (bPlayingMontageReloading)
+        return;
+
     if (!EquippedWeapon)
         return;
+
+    if (RemainAmmo <= 0)
+        return;
+
+    bPlayingMontageReloading = true;
+    StopRunning();
+
+    if (EquippedWeapon->GetCurAmmo() == 0)
+    {
+        ReloadEmpty();
+        return;
+    }
+
 
     UWeaponPoseDA* poses = EquippedWeapon->GetPosesDA();
 
@@ -284,6 +394,10 @@ void ACharacterBase::Reload()
     slotAim.AnimTrack.AnimSegments.Add(newSegment);
 
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
+
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &ACharacterBase::OnReloadBlendOut);
+    SkeletalMeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, montage);
 
     EquippedWeapon->Reload();
 }
@@ -318,6 +432,10 @@ void ACharacterBase::ReloadEmpty()
 
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
 
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &ACharacterBase::OnReloadBlendOut);
+    SkeletalMeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, montage);
+
     EquippedWeapon->Reload();
 }
 
@@ -328,9 +446,22 @@ bool ACharacterBase::IsRunning()
 
 void ACharacterBase::Running()
 {
-    bRunning = !bRunning;
+    if (bPlayingMontageReloading)
+        return;
+
+    if (bCrouching)
+        return;
+
+    bRunning = true;
 
     SET_MAX_WALK_SPEED(450.f);
+}
+
+void ACharacterBase::StopRunning()
+{
+    bRunning = false;
+
+    SET_MAX_WALK_SPEED(300.f);
 }
 
 bool ACharacterBase::IsFalling()
@@ -345,14 +476,117 @@ bool ACharacterBase::IsCrouching()
 
 void ACharacterBase::Crouching()
 {
+    if (bRunning)
+        return;
+
     bCrouching = !bCrouching;
 
     if (bCrouching)
     {
+        StopRunning();
         Crouch();
     }
     else
     {
         UnCrouch();
     }
+}
+
+bool ACharacterBase::IsBreath()
+{
+    return bBreath;
+}
+
+void ACharacterBase::Breath()
+{
+    bBreath = !bBreath;
+}
+
+void ACharacterBase::StopFire()
+{
+    if(EquippedWeapon->GetFireType() == EFireType::Auto)
+        bHoldingFire = false;
+}
+
+void ACharacterBase::ChangeFireType()
+{
+    if (!EquippedWeapon)
+        return;
+
+    if (bPlayingMontageReloading)
+        return;
+
+    if (bHoldingFire)
+        return;
+
+    EquippedWeapon->ChangeFireType();
+    UpdateWidget();
+}
+
+void ACharacterBase::FireCore(UAnimMontage* Montage)
+{
+
+    if (EquippedWeapon->GetFireType() == EFireType::Auto && EquippedWeapon->GetCurAmmo() <= 0)
+    {
+        bHoldingFire = false;
+        GetWorldTimerManager().ClearTimer(FireHandle);
+        return;
+    }
+
+    if (EquippedWeapon->GetFireType() == EFireType::Auto && !bHoldingFire)
+    {
+        bHoldingFire = false;
+        GetWorldTimerManager().ClearTimer(FireHandle);
+        return;
+    }
+
+    if (EquippedWeapon->GetFireType() == EFireType::Brust && EquippedWeapon->GetCurAmmo() <= 0)
+    {
+        bHoldingFire = false;
+        GetWorldTimerManager().ClearTimer(FireHandle);
+        return;
+    }
+
+    if (EquippedWeapon->GetFireType() == EFireType::Brust && BrustFireCount >= 3)
+    {
+        bHoldingFire = false;
+        GetWorldTimerManager().ClearTimer(FireHandle);
+        return;
+    }
+
+    SkeletalMeshArms->GetAnimInstance()->Montage_Play(Montage);
+    EquippedWeapon->Fire();
+
+    UpdateWidget();
+    BrustFireCount++;
+}
+
+void ACharacterBase::UpdateWidget()
+{
+    if (!PlayerHUD)
+    {
+        return;
+    }
+
+    if (EquippedWeapon)
+    {
+        PlayerHUD->GetWeaponWidget()->SetMaxAmmo(RemainAmmo);
+        PlayerHUD->GetWeaponWidget()->SetCurAmmo(EquippedWeapon);
+        PlayerHUD->GetWeaponWidget()->SetFireType(EquippedWeapon);
+        PlayerHUD->GetWeaponImage()->SetWeaponBodyImage(EquippedWeapon);
+    }
+}
+
+void ACharacterBase::OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+    int8 needAmmo = EquippedWeapon->GetMaxAmmo() - EquippedWeapon->GetCurAmmo();
+
+    int8 ammotoEquip = (RemainAmmo > needAmmo  ? needAmmo  : RemainAmmo);
+
+    RemainAmmo -= ammotoEquip;
+    EquippedWeapon->SetAmmo(ammotoEquip + EquippedWeapon->GetCurAmmo());
+
+    UpdateWidget();
+
+    bPlayingMontageReloading = false;
 }

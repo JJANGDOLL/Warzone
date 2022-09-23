@@ -17,6 +17,8 @@ class ACasingBase;
 class ABulletBase;
 class UParticleSystem;
 class UWeaponPoseDA;
+class USoundCue;
+class UTexture;
 
 UCLASS(Abstract)
 class PROJECTX_API AWeaponBase : public AActor, public IIWeapon
@@ -66,6 +68,11 @@ protected:
     void GetBulletInfo();
 	void GetFlame();
 	void GetPoses();
+    UAnimSequenceBase* GetEmptyPose();
+	void GetWeaponInfo();
+    void GetSounds();
+
+	virtual void SetWeaponName();
 
 protected:
 	FName WeaponName;
@@ -99,18 +106,28 @@ public:
 	void EjectCasing() override;
 	void SpawnBullet() override;
 	void SpawnFlame() override;
-    UAnimSequenceBase* GetEmptyPose();
-    bool IsEmpty();
+    bool IsEmpty() override;
 
 	FVector GetWeaponForward() override;
 
 	UWeaponPoseDA* GetPosesDA() override;
 	FTransform GetAimOffset() override;
+    int8 GetMaxAmmo() override;
+	int8 GetCurAmmo() override;
+	EFireType GetFireType() override;
+	float GetFireInterval() override;
+	bool IsReloading() override;
+    UTexture2D* GetWeaponBodyImage() override;
+
 
     USkeletalMeshComponent* GetWeaponBodyMesh();
     UStaticMeshComponent* GetWeaponMagazineMesh();
     UStaticMeshComponent* GetWeaponIronSightMesh();
 
+	void SetAmmo(int8 InAmmo);
+	void ChangeFireType();
+	void OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+	
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess=true))
 	float EjectImpulse = 350.f;
@@ -120,5 +137,21 @@ private:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
 	uint8 CurrentAmmo = 5;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
+	uint8 FireTypeIdx = 0;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
+	bool bReloading = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
+    USoundCue* FireSound;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
+    USoundCue* ReloadSound;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
+    USoundCue* ReloadEmptySound;
 };
+
 

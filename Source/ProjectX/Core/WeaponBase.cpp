@@ -14,6 +14,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "BulletBase.h"
 #include "Kismet/GameplayStatics.h"
+#include "Sound/SoundCue.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -55,11 +56,13 @@ void AWeaponBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
     OnTestFeature = TestMethods[TestFeature];
+
+// 	Helpers::DrawGizmo(GetWorld(), Weapon->GetSocketTransform(TEXT("SOCKET_Bullet")));
 }
 
 void AWeaponBase::MakeWeapon()
 {
-    GetWeaponNameByWeaponType();
+    SetWeaponName();
 	if (!FindWeaponDataInDataTable())
 	{
 		return;
@@ -76,6 +79,8 @@ void AWeaponBase::MakeWeapon()
 	GetFlame();
 	GetPoses();
 	GetEmptyPose();
+	GetWeaponInfo();
+	GetSounds();
 }
 
 void AWeaponBase::GetWeaponNameByWeaponType()
@@ -159,6 +164,23 @@ void AWeaponBase::GetPoses()
 	PosesDA = WeaponDA->PosesDA;
 }
 
+void AWeaponBase::GetWeaponInfo()
+{
+	MaxAmmo = WeaponDA->MaxAmmo;
+}
+
+void AWeaponBase::GetSounds()
+{
+	FireSound = WeaponDA->FireSound;
+	ReloadSound = WeaponDA->ReloadSound;
+	ReloadEmptySound = WeaponDA->ReloadEmptySound;
+}
+
+void AWeaponBase::SetWeaponName()
+{
+
+}
+
 void AWeaponBase::EjectCasing()
 {
 	FTransform casingEjectTransform = Weapon->GetSocketTransform(TEXT("SOCKET_Eject"), RTS_World);
@@ -175,7 +197,8 @@ void AWeaponBase::SpawnBullet()
 
 	muzzleTransform.SetScale3D(GetActorScale());
 	ABulletBase* bullet = GetWorld()->SpawnActor<ABulletBase>(BulletClass, muzzleTransform);
-	bullet->OnLaunch(false, bullet->GetActorRightVector() * 33000.f * -1.f);
+	if(bullet)
+		bullet->OnLaunch(false, muzzleTransform.GetRotation().GetForwardVector() * WeaponDA->FireIntensity);
 }
 
 void AWeaponBase::SpawnFlame()
@@ -208,6 +231,26 @@ FTransform AWeaponBase::GetAimOffset()
 	return WeaponDA->AimOffset;
 }
 
+int8 AWeaponBase::GetMaxAmmo()
+{
+	return MaxAmmo;
+}
+
+int8 AWeaponBase::GetCurAmmo()
+{
+    return CurrentAmmo;
+}
+
+EFireType AWeaponBase::GetFireType()
+{
+	return WeaponDA->SupportFireType[FireTypeIdx];
+}
+
+float AWeaponBase::GetFireInterval()
+{
+	return WeaponDA->FireInterval;
+}
+
 void AWeaponBase::DoNothing()
 {
 	Helpers::DrawGizmo(Weapon);
@@ -218,12 +261,33 @@ void AWeaponBase::DoNothing()
 
 void AWeaponBase::Reload()
 {
-	Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageReload);
+	bReloading = true;
+	if (CurrentAmmo > 0)
+	{
+		Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageReload);
+        FOnMontageEnded BlendOutDele;
+        BlendOutDele.BindUObject(this, &AWeaponBase::OnReloadBlendOut);
+        Weapon->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, WeaponDA->MontageReload);
+		if (ReloadSound)
+			UGameplayStatics::PlaySoundAtLocation(GetWorld(), ReloadSound, GetActorLocation(), 2.f);
+	}
+	else
+	{
+        Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageReloadEmpty);
+		FOnMontageEnded BlendOutDele;
+		BlendOutDele.BindUObject(this, &AWeaponBase::OnReloadBlendOut);
+		Weapon->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, WeaponDA->MontageReloadEmpty);
+        if (ReloadEmptySound)
+            UGameplayStatics::PlaySoundAtLocation(GetWorld(), ReloadEmptySound, GetActorLocation());
+	}
 }
 
 void AWeaponBase::Fire()
 {
 	Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageFire);
+	if(FireSound)
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetActorLocation());
+	CurrentAmmo--;
 }
 
 USkeletalMeshComponent* AWeaponBase::GetWeaponBodyMesh()
@@ -239,5 +303,34 @@ UStaticMeshComponent* AWeaponBase::GetWeaponMagazineMesh()
 UStaticMeshComponent* AWeaponBase::GetWeaponIronSightMesh()
 {
 	return IronSight;
+}
+
+void AWeaponBase::SetAmmo(int8 InAmmo)
+{
+	CurrentAmmo = InAmmo;
+}
+
+void AWeaponBase::ChangeFireType()
+{
+	FireTypeIdx++;
+	if (FireTypeIdx == WeaponDA->SupportFireType.Num())
+	{
+		FireTypeIdx = 0;
+	}
+}
+
+void AWeaponBase::OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	bReloading = false;
+}
+
+bool AWeaponBase::IsReloading()
+{
+	return bReloading;
+}
+
+UTexture2D* AWeaponBase::GetWeaponBodyImage()
+{
+	return WeaponDA->WeaponBodyImage;
 }
 

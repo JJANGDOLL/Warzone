@@ -15,4 +15,6 @@ public:
 	// Sets default values for this actor's properties
 	AAssault_Rifle_01();
 
+    void SetWeaponName() override;
+
 };

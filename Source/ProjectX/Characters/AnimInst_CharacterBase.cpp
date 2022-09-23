@@ -40,6 +40,7 @@ void UAnimInst_CharacterBase::NativeUpdateAnimation(float DeltaSeconds)
         bAiming = CharItf->IsAiming();
         bRunning = CharItf->IsRunning();
         bFalling = CharItf->IsFalling();
+        bBreath = CharItf->IsBreath();
         Horizontal = FMath::Clamp(Character ->GetVelocity().Y / 100.f, -1.f, 1.f);
         Vertical = FMath::Clamp(Character ->GetVelocity().X / 100.f , -1.f, 1.f);;
 

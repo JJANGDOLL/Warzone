@@ -27,5 +27,5 @@ void UAnimInst_WEP_Base::NativeUpdateAnimation(float DeltaSeconds)
     if (!WeaponItf)
         return;
 
-    bEmpty = WeaponItf->IsEmpty();
+    bEmpty = WeaponItf->IsEmpty() && !WeaponItf->IsReloading();
 }

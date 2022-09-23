@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+#include "Datas/Weapons/WeaponsEnum.h"
 #include "IWeapon.generated.h"
 
 // This class does not need to be modified.
@@ -39,4 +40,11 @@ public:
 
 	virtual UAnimSequenceBase* GetEmptyPose() = 0;
 	virtual bool IsEmpty() = 0;
+
+	virtual int8 GetMaxAmmo() = 0;
+    virtual int8 GetCurAmmo() = 0;
+	virtual EFireType GetFireType() = 0;
+	virtual float GetFireInterval() = 0;
+	virtual bool IsReloading() = 0;
+	virtual class UTexture2D* GetWeaponBodyImage() = 0;
 };

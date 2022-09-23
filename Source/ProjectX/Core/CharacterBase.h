@@ -14,6 +14,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class AWeaponBase;
 class UAnimMontage;
+class UUSerWidget;
+class UMainGameInterface;
 
 UCLASS()
 class PROJECTX_API ACharacterBase : public ACharacter, public IICharacter
@@ -26,6 +28,9 @@ public:
 
 
 	void OnConstruction(const FTransform& Transform) override;
+
+
+	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Components", meta = (AllowPrivateAccess = true))
@@ -66,9 +71,17 @@ public:
 	void ReloadEmpty() override;
 	bool IsRunning() override;
 	void Running() override;
+	void StopRunning() override;
     bool IsFalling() override;
     bool IsCrouching() override;
     void Crouching() override;
+    bool IsBreath() override;
+    void Breath() override;
+	
+	void StopFire();
+
+	void ChangeFireType();
+	void FireCore(UAnimMontage* Montage);
 
 private:
 	AWeaponBase* EquippedWeapon;
@@ -82,6 +95,9 @@ private:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
     bool bCrouching;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    bool bBreath = true;
+
 protected:
 	// Test, Debug
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Character | Test", meta = (AllowPrivateAccess = true))
@@ -90,6 +106,8 @@ protected:
 protected:
     FTimerHandle TestTimerHandle;
 
+    FTimerHandle FireHandle;
+	FTimerDelegate FireDelegate;
 
 private:
     typedef void (ACharacterBase::* TestFunc)(void);
@@ -103,4 +121,26 @@ private:
 
 public:
     TestFunc OnTestFeature = nullptr;
+
+	//HUD
+public:
+	UPROPERTY(EditInstanceOnly, Category = "Projx | Widget ", meta = (AllowPrivateAccess = true))
+    TSubclassOf<UMainGameInterface> PlayerHUDClass;
+
+	UPROPERTY()
+	UMainGameInterface* PlayerHUD;
+
+private:
+	void UpdateWidget();
+
+private:
+	void OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+
+	bool bPlayingMontageReloading = false;
+
+	int32 RemainAmmo = 100;
+
+	bool bHoldingFire = false;
+
+	int8 BrustFireCount = 0;
 };

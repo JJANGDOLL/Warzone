@@ -48,4 +48,11 @@ public:
 
 public:
 	void OnLaunch(bool bCinematic, FVector Velocity);
+
+	UFUNCTION(BlueprintNativeEvent, Category = "Collision")
+	void HitCheck(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	void PostInitializeComponents() override;
+
+	TSubclassOf<AActor> DamageTextClass;
 };

@@ -12,3 +12,8 @@ AAssault_Rifle_01::AAssault_Rifle_01()
 
     MakeWeapon();
 }
+
+void AAssault_Rifle_01::SetWeaponName()
+{
+    WeaponName = TEXT("Assault-Rifle-01");
+}

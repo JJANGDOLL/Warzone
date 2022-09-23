@@ -52,7 +52,8 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
     float Horizontal;
 
-
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    bool bBreath;
 
 private:
 	class ACharacter* Character;

@@ -9,3 +9,9 @@ AHandgun_01::AHandgun_01()
 
     MakeWeapon();
 }
+
+void AHandgun_01::SetWeaponName()
+{
+    WeaponName = TEXT("Handgun-01");
+
+}

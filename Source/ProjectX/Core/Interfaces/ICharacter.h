@@ -30,7 +30,10 @@ public:
 	virtual void ReloadEmpty() = 0;
 	virtual bool IsRunning() = 0;
     virtual void Running() = 0;
+	virtual void StopRunning() = 0;
 	virtual bool IsFalling() = 0;
 	virtual bool IsCrouching() = 0;
 	virtual void Crouching() = 0;
+	virtual bool IsBreath() = 0;
+	virtual void Breath() = 0;
 };

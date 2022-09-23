@@ -48,6 +48,9 @@ private:
     void AimAct();
 
 private:
+    void BreathAct();
+
+private:
     void DoNothingAct();
 
 protected:

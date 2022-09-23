@@ -10,3 +10,9 @@ UWeaponAttachment::UWeaponAttachment()
     NO_OVERLAPEVENTS(this);
     NO_STEPUPON(this);
 }
+
+UTexture2D* UWeaponAttachment::GetAttachmentImage()
+{
+    return nullptr;
+}
+

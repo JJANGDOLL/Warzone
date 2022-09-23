@@ -11,6 +11,7 @@ enum class EWeaponTypes : uint8
     HANDGUN_01,
     HANDGUN_02,
     SHOTGUN_01,
+    SNIPER_01,
     Count UMETA(Hidden)
 };
 
@@ -32,3 +33,15 @@ enum class EWeaponFeature : uint8
     SpawnFlame,
     Count UMETA(Hidden)
 };
+
+UENUM(BlueprintType)
+enum class EFireType : uint8
+{
+    None = 0,
+    Single,
+    Brust,
+    Auto,
+    Count UMETA(Hidden)
+};
+
+ENUM_RANGE_BY_COUNT(EFireType, EFireType::Count);

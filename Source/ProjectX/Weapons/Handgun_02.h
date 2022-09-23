@@ -16,4 +16,5 @@ class PROJECTX_API AHandgun_02 : public AWeaponBase
 	
 public:
 	AHandgun_02();
+    virtual void SetWeaponName() override;
 };
