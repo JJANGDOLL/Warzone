@@ -13,6 +13,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/Character.h"
 #include "Components/CapsuleComponent.h"
+#include "Materials/MaterialInstanceConstant.h"
+#include "Components/DecalComponent.h"
 
 // Sets default values
 ABulletBase::ABulletBase()
@@ -33,6 +35,8 @@ ABulletBase::ABulletBase()
 	CollisionBox->SetCollisionProfileName(TEXT("Bullet"));
 
 	DamageTextClass = ADamageText::StaticClass();
+	
+	Helpers::GetAsset(&WallDecalMaterial, TEXT("MaterialInstanceConstant'/Game/InfimaGames/LowPolyShooterPack/Art/Effects/Materials/MI_Decal_Bullet_Concrete.MI_Decal_Bullet_Concrete'"));
 }
 
 // Called when the game starts or when spawned
@@ -62,7 +66,7 @@ void ABulletBase::HitCheck_Implementation(UPrimitiveComponent* OverlappedComp, A
 // 	Logger::Log(OtherComp);
 // 	Logger::Log(OtherBodyIndex);
 // 	Logger::Log(bFromSweep);
-	Logger::Log(SweepResult.BoneName.ToString());
+// 	Logger::Log(SweepResult.BoneName.ToString());
 	IIDamageable* damagableActor = Cast<IIDamageable>(OtherActor);
 	if (damagableActor)
 	{
@@ -77,8 +81,13 @@ void ABulletBase::HitCheck_Implementation(UPrimitiveComponent* OverlappedComp, A
 		}
 		damagableActor->Hitted(power , e, nullptr, this);
 		
-		ADamageText* dt = GetWorld()->SpawnActor<ADamageText>(DamageTextClass, SweepResult.ImpactPoint + SweepResult.ImpactNormal * 5.f, FRotator::ZeroRotator);
+		ADamageText* dt = GetWorld()->SpawnActor<ADamageText>(DamageTextClass, SweepResult.ImpactPoint + GetActorUpVector() * 10.f + SweepResult.ImpactNormal * 5.f, FRotator::ZeroRotator);
 		dt->SetText(FText::AsNumber(power), critical);
+	}
+	else
+	{
+		UDecalComponent* decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), WallDecalMaterial, FVector::OneVector, SweepResult.ImpactPoint, SweepResult.ImpactNormal.Rotation(), 5.f);
+		decal->SetFadeScreenSize(0.0001f);
 	}
 
 	Destroy();

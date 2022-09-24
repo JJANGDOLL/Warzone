@@ -87,4 +87,7 @@ public:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
     float FireIntensity = 25000.f;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    FVector2D RecoilIntensity = FVector2D(0.05f, 0.05f);
 };

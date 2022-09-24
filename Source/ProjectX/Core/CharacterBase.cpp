@@ -190,8 +190,8 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
     PlayerInputComponent->BindAxis("Turn", this, &APawn::AddControllerYawInput);
 
-    PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ACharacterBase::Aiming);
-    PlayerInputComponent->BindAction("Aim", IE_Released, this, &ACharacterBase::Aiming);
+    PlayerInputComponent->BindAction("Aim", IE_Pressed, this, &ACharacterBase::StartAiming);
+    PlayerInputComponent->BindAction("Aim", IE_Released, this, &ACharacterBase::StopAiming);
     PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ACharacterBase::Fire);
     PlayerInputComponent->BindAction("Fire", IE_Released, this, &ACharacterBase::StopFire);
     PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &ACharacterBase::Reload);
@@ -199,8 +199,8 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAction("Running", IE_Released, this, &ACharacterBase::StopRunning);
     PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
     PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-    PlayerInputComponent->BindAction("Crouching", IE_Pressed, this, &ACharacterBase::Crouching);
-    PlayerInputComponent->BindAction("Crouching", IE_Released, this, &ACharacterBase::Crouching);
+    PlayerInputComponent->BindAction("Crouching", IE_Pressed, this, &ACharacterBase::StartCrouch);
+    PlayerInputComponent->BindAction("Crouching", IE_Released, this, &ACharacterBase::StopCrouch);
     PlayerInputComponent->BindAction("Breath", IE_Pressed, this, &ACharacterBase::Breath);
     PlayerInputComponent->BindAction("Breath", IE_Released, this, &ACharacterBase::Breath);
     PlayerInputComponent->BindAction("FireType", IE_Pressed, this, &ACharacterBase::ChangeFireType);
@@ -554,6 +554,25 @@ void ACharacterBase::FireCore(UAnimMontage* Montage)
         return;
     }
 
+    FVector2D recoilIntensity = EquippedWeapon->GetRecoilIntensity();
+
+    float recoilUp = FMath::FRandRange(recoilIntensity.X * 0.1f, recoilIntensity.X);
+    float recoilRight = FMath::FRandRange(recoilIntensity.Y * 0.1f, recoilIntensity.Y);
+
+    if (bAiming)
+    {
+        recoilUp *= 0.8f;
+        recoilRight *= 0.8f;
+    }
+
+    if (bCrouching)
+    {
+        recoilUp *= 0.6;
+        recoilRight *= 0.6f;
+    }
+
+    GetController()->SetControlRotation(FRotator(recoilUp, recoilRight, 0.f) +  GetControlRotation());
+
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(Montage);
     EquippedWeapon->Fire();
 
@@ -589,4 +608,37 @@ void ACharacterBase::OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupt
     UpdateWidget();
 
     bPlayingMontageReloading = false;
+}
+
+void ACharacterBase::StartCrouch()
+{
+    if (bRunning)
+        return;
+
+    bCrouching = true;
+
+    StopRunning();
+    Crouch();
+}
+
+void ACharacterBase::StopCrouch()
+{
+    bCrouching = false;
+    UnCrouch();
+}
+
+void ACharacterBase::StartAiming()
+{
+    StopRunning();
+
+    bAiming = true;
+
+    SET_MAX_WALK_SPEED(250.f);
+}
+
+void ACharacterBase::StopAiming()
+{
+    bAiming = false;
+
+    SET_MAX_WALK_SPEED(300.f);
 }

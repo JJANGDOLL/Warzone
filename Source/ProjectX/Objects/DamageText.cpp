@@ -12,7 +12,7 @@ ADamageText::ADamageText()
 {
     GetTextRender()->SetHorizontalAlignment(EHorizTextAligment::EHTA_Center);
     GetTextRender()->SetVerticalAlignment(EVerticalTextAligment::EVRTA_TextCenter);
-    GetTextRender()->SetWorldSize(8.f);
+    GetTextRender()->SetWorldSize(12.f);
 }
 
 void ADamageText::BeginPlay()

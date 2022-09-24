@@ -55,4 +55,5 @@ public:
 	void PostInitializeComponents() override;
 
 	TSubclassOf<AActor> DamageTextClass;
+	class UMaterialInstanceConstant* WallDecalMaterial;
 };

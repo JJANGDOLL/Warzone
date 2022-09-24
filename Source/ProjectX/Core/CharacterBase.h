@@ -138,9 +138,14 @@ private:
 
 	bool bPlayingMontageReloading = false;
 
-	int32 RemainAmmo = 100;
+	uint8 RemainAmmo = 200;
 
 	bool bHoldingFire = false;
 
-	int8 BrustFireCount = 0;
+	uint8 BrustFireCount = 0;
+
+	void StartCrouch();
+	void StopCrouch();
+	void StartAiming();
+	void StopAiming();
 };

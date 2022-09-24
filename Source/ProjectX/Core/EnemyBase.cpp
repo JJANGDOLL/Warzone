@@ -77,12 +77,18 @@ void AEnemyBase::Tick(float DeltaTime)
 	if (PlayerCharacter)
 	{
 		FRotator widgetRot = PlayerCharacter->GetCapsuleComponent()->GetForwardVector().Rotation() * -1;
-
-		StatusWidgetComp->SetRelativeRotation(FRotator(0.f, widgetRot.Yaw * -1, 0.f));
+		FVector dirChar = GetActorLocation() - PlayerCharacter->GetActorLocation();
+		dirChar.Normalize();
+		if ( FVector::DotProduct(PlayerCharacter->GetCapsuleComponent()->GetForwardVector(), dirChar) > 0.995f)
+		{
+			StatusWidgetComp->SetVisibility(true);
+			StatusWidgetComp->SetRelativeRotation(FRotator(0.f, widgetRot.Yaw * -1, 0.f));
+		}
+		else
+		{
+            StatusWidgetComp->SetVisibility(false);
+		}
 	}
-
-// 	Logger::Log(widgetRot);
-// 	Logger::Log(StatusWidget->GetComponentRotation());
 }
 
 // Called to bind functionality to input

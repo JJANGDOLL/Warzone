@@ -334,3 +334,8 @@ UTexture2D* AWeaponBase::GetWeaponBodyImage()
 	return WeaponDA->WeaponBodyImage;
 }
 
+FVector2D AWeaponBase::GetRecoilIntensity()
+{
+	return WeaponDA->RecoilIntensity;
+}
+

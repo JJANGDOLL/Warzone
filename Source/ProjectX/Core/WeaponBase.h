@@ -118,6 +118,7 @@ public:
 	float GetFireInterval() override;
 	bool IsReloading() override;
     UTexture2D* GetWeaponBodyImage() override;
+	FVector2D GetRecoilIntensity() override;
 
 
     USkeletalMeshComponent* GetWeaponBodyMesh();
