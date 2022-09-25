@@ -15,6 +15,7 @@
 #include "BulletBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
+#include "CharacterBase.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -193,12 +194,37 @@ void AWeaponBase::EjectCasing()
 
 void AWeaponBase::SpawnBullet()
 {
-    FTransform muzzleTransform = Weapon->GetSocketTransform(TEXT("SOCKET_Bullet"), RTS_World);
+    FTransform bulletTransform = Weapon->GetSocketTransform(TEXT("SOCKET_Bullet"), RTS_World);
 
-	muzzleTransform.SetScale3D(GetActorScale());
-	ABulletBase* bullet = GetWorld()->SpawnActor<ABulletBase>(BulletClass, muzzleTransform);
-	if(bullet)
-		bullet->OnLaunch(false, muzzleTransform.GetRotation().GetForwardVector() * WeaponDA->FireIntensity);
+	ACharacterBase* ownerChar = Cast<ACharacterBase>(GetOwner());
+	if (!ownerChar)
+		return;
+	
+	FVector location;
+	FVector direction;
+
+	if (ownerChar->IsAiming() && ownerChar->GetController()->IsPlayerController())
+	{
+		PrintLine();
+
+		int32 sizeX;
+		int32 sizeY;
+		UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetViewportSize(sizeX, sizeY);
+		UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(GetWorld(), 0), FVector2D(sizeX / 2, sizeY / 2), location, direction);
+
+		bulletTransform.SetLocation(location);
+		bulletTransform.SetRotation(FQuat(direction.Rotation()));
+
+// 		DrawDebugDirectionalArrow(GetWorld(), location, location + direction * 100.f, 10, FColor::Red, false, 20.f, 0.f, 1.f);
+	}
+
+	bulletTransform.SetScale3D(GetActorScale());
+	ABulletBase* bullet = GetWorld()->SpawnActor<ABulletBase>(BulletClass, bulletTransform);
+	if (bullet)
+	{
+		bullet->SetPower(WeaponDA->BulletPower);
+		bullet->OnLaunch(false, bulletTransform.GetRotation().GetForwardVector() * WeaponDA->FireIntensity);
+	}
 }
 
 void AWeaponBase::SpawnFlame()
@@ -332,6 +358,11 @@ bool AWeaponBase::IsReloading()
 UTexture2D* AWeaponBase::GetWeaponBodyImage()
 {
 	return WeaponDA->WeaponBodyImage;
+}
+
+UTexture2D* AWeaponBase::GetWeaponMagazineImage()
+{
+    return WeaponDA->WeaponBodyImage;
 }
 
 FVector2D AWeaponBase::GetRecoilIntensity()

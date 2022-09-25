@@ -36,4 +36,7 @@ public:
 	virtual void Crouching() = 0;
 	virtual bool IsBreath() = 0;
 	virtual void Breath() = 0;
+	virtual bool IsHolster() = 0;
+	virtual void Holstering() = 0;
+	virtual void Unholstering() = 0;
 };

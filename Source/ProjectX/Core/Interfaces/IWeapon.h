@@ -46,6 +46,8 @@ public:
 	virtual EFireType GetFireType() = 0;
 	virtual float GetFireInterval() = 0;
 	virtual bool IsReloading() = 0;
-	virtual class UTexture2D* GetWeaponBodyImage() = 0;
 	virtual FVector2D GetRecoilIntensity() = 0;
+
+	virtual class UTexture2D* GetWeaponBodyImage() = 0;
+    virtual class UTexture2D* GetWeaponMagazineImage() = 0;
 };

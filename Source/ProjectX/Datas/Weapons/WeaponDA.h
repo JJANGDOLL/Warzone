@@ -90,4 +90,7 @@ public:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
     FVector2D RecoilIntensity = FVector2D(0.05f, 0.05f);
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    float BulletPower = 1.f;
 };

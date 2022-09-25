@@ -15,6 +15,8 @@ UAnimInst_CharacterBase::UAnimInst_CharacterBase()
     Helpers::GetAsset(&PoseIdle, TEXT("AnimSequence'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Characters/Animations/ARs/A_FP_PCH_AR_01_Idle_Pose.A_FP_PCH_AR_01_Idle_Pose'"));
     Helpers::GetAsset(&PoseAim, TEXT("AnimSequence'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Characters/Animations/ARs/A_FP_PCH_AR_01_Aim_Pose.A_FP_PCH_AR_01_Aim_Pose'"));
     Helpers::GetAsset(&PoseRun, TEXT("AnimSequence'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Characters/Animations/_Common/A_FP_PCH_Run_01.A_FP_PCH_Run_01'"));
+    Helpers::GetAsset(&PoseHolster, TEXT("AnimSequence'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Characters/Animations/ARs/A_FP_PCH_AR_01_Holster.A_FP_PCH_AR_01_Holster'"));
+    Helpers::GetAsset(&PoseUnholster, TEXT("AnimSequence'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Characters/Animations/ARs/A_FP_PCH_AR_01_Unholster.A_FP_PCH_AR_01_Unholster'"));
 }
 
 void UAnimInst_CharacterBase::NativeBeginPlay()
@@ -41,6 +43,7 @@ void UAnimInst_CharacterBase::NativeUpdateAnimation(float DeltaSeconds)
         bRunning = CharItf->IsRunning();
         bFalling = CharItf->IsFalling();
         bBreath = CharItf->IsBreath();
+        bHolster = CharItf->IsHolster();
         Horizontal = FMath::Clamp(Character ->GetVelocity().Y / 100.f, -1.f, 1.f);
         Vertical = FMath::Clamp(Character ->GetVelocity().X / 100.f , -1.f, 1.f);;
 

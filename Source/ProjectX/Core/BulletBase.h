@@ -48,6 +48,7 @@ public:
 
 public:
 	void OnLaunch(bool bCinematic, FVector Velocity);
+	void SetPower(float InPower);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Collision")
 	void HitCheck(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -56,4 +57,6 @@ public:
 
 	TSubclassOf<AActor> DamageTextClass;
 	class UMaterialInstanceConstant* WallDecalMaterial;
+
+	float Power = 2.f;
 };

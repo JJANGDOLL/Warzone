@@ -59,6 +59,11 @@ void ABulletBase::OnLaunch(bool bCinematic, FVector Velocity)
 	Projectile->Velocity = Velocity;
 }
 
+void ABulletBase::SetPower(float InPower)
+{
+	Power = InPower;
+}
+
 void ABulletBase::HitCheck_Implementation(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 // 	Logger::Log(OverlappedComp);
@@ -70,7 +75,7 @@ void ABulletBase::HitCheck_Implementation(UPrimitiveComponent* OverlappedComp, A
 	IIDamageable* damagableActor = Cast<IIDamageable>(OtherActor);
 	if (damagableActor)
 	{
-		float power = 10.f;
+		float power = Power;
 		bool critical = false;
 
 		FDamageEvent e;

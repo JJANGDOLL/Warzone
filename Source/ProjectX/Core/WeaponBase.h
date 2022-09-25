@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "Datas/Weapons/WeaponsEnum.h"
 #include "Interfaces/IWeapon.h"
+#include "Interfaces/IMainWeapon.h"
 #include "WeaponBase.generated.h"
 
 class UWeaponBody;
@@ -21,7 +22,7 @@ class USoundCue;
 class UTexture;
 
 UCLASS(Abstract)
-class PROJECTX_API AWeaponBase : public AActor, public IIWeapon
+class PROJECTX_API AWeaponBase : public AActor, public IIWeapon, public IIMainWeapon
 {
 	GENERATED_BODY()
 	
@@ -105,7 +106,7 @@ public:
 	void Fire() override;
 	void EjectCasing() override;
 	void SpawnBullet() override;
-	void SpawnFlame() override;
+    void SpawnFlame() override;
     bool IsEmpty() override;
 
 	FVector GetWeaponForward() override;
@@ -118,6 +119,8 @@ public:
 	float GetFireInterval() override;
 	bool IsReloading() override;
     UTexture2D* GetWeaponBodyImage() override;
+	UTexture2D* GetWeaponMagazineImage() override;
+
 	FVector2D GetRecoilIntensity() override;
 
 

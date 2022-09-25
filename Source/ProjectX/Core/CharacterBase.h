@@ -16,6 +16,7 @@ class AWeaponBase;
 class UAnimMontage;
 class UUSerWidget;
 class UMainGameInterface;
+class UAC_Inventory;
 
 UCLASS()
 class PROJECTX_API ACharacterBase : public ACharacter, public IICharacter
@@ -41,6 +42,9 @@ protected:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Components", meta = (AllowPrivateAccess = true))
 	UCameraComponent* Camera;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Components", meta = (AllowPrivateAccess = true))
+	UAC_Inventory* Inventory;
 
 protected:
 	// Called when the game starts or when spawned
@@ -77,6 +81,9 @@ public:
     void Crouching() override;
     bool IsBreath() override;
     void Breath() override;
+	bool IsHolster() override;
+    void Holstering() override;
+    void Unholstering() override;
 	
 	void StopFire();
 
@@ -84,7 +91,8 @@ public:
 	void FireCore(UAnimMontage* Montage);
 
 private:
-	AWeaponBase* EquippedWeapon;
+    AWeaponBase* EquippedWeapon;
+    AWeaponBase* NextWeapon;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
 	bool bAiming;
@@ -97,6 +105,12 @@ private:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
     bool bBreath = true;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    bool bHolster = false;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    bool bPlayingMontageHolstering = false;
 
 protected:
 	// Test, Debug
@@ -147,5 +161,15 @@ private:
 	void StartCrouch();
 	void StopCrouch();
 	void StartAiming();
-	void StopAiming();
+    void StopAiming();
+
+	void GetItemOne();
+    void GetItemTwo();
+    void GetItemThree();
+
+	bool bPlayingHolstering = false;
+
+public:
+	void EndHolstering();
 };
+

@@ -18,4 +18,7 @@ public:
 
     UPROPERTY(EditAnywhere, meta = (BindWidget))
 	UImage* WeaponBody;
+
+    UPROPERTY(EditAnywhere, meta = (BindWidget))
+    UImage* WeaponMagazine;
 };

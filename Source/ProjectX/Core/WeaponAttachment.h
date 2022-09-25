@@ -23,6 +23,4 @@ public:
 
 public:
 	class UTexture2D* GetAttachmentImage() override;
-
-
 };

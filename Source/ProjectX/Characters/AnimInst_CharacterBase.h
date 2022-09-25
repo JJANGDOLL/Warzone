@@ -55,6 +55,15 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
     bool bBreath;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
+    bool bHolster;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | AnimSeq", meta = (AllowPrivateAccess = true))
+    UAnimSequenceBase* PoseHolster;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | AnimSeq", meta = (AllowPrivateAccess = true))
+    UAnimSequenceBase* PoseUnholster;
+
 private:
 	class ACharacter* Character;
 	class IICharacter* CharItf;

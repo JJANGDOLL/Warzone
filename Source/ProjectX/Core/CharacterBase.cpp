@@ -25,6 +25,7 @@
 #include "Widget/WeaponWidget.h"
 #include "Widget/WeaponTexture.h"
 #include "Weapons/Sniper_01.h"
+#include "AC_Inventory.h"
 
 #define SET_MAX_WALK_SPEED(p) GetCharacterMovement()->MaxWalkSpeed = p;
 
@@ -37,6 +38,8 @@ ACharacterBase::ACharacterBase()
     Helpers::CreateComponent(this, &SpringArm, TEXT("Spring Arm"), GetMesh());
     Helpers::CreateComponent(this, &SkeletalMeshArms, TEXT("Skeletal Mesh Arms"), SpringArm);
     Helpers::CreateComponent(this, &Camera, TEXT("Camera"), SkeletalMeshArms, TEXT("SOCKET_Camera"));
+
+    Helpers::CreateActorComponent(this, &Inventory, TEXT("Inventory"));
 
     USkeletalMesh* meshArms;
     Helpers::GetAsset(&meshArms, TEXT("SkeletalMesh'/Game/InfimaGames/LowPolyShooterPack/Art/Characters/Default/SK_FP_CH_Default.SK_FP_CH_Default'"));
@@ -106,12 +109,9 @@ void ACharacterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
-    if (!EquippedWeapon && TestWeapon)
-    {
-        EquippedWeapon = GetWorld()->SpawnActor<AWeaponBase>(TestWeapon, GetActorTransform());
-        EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
-    }
+
+    EquippedWeapon = Cast<AWeaponBase>(Inventory->GetLastItem());
+    EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
 
     SpringArm->SetRelativeLocation(GetViewLocation());
 //     SkeletalMeshArms->AddRelativeLocation(-FVector(0.f, 0.f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight()));
@@ -156,7 +156,6 @@ void ACharacterBase::Tick(float DeltaTime)
     SetActorRelativeRotation(FRotator(0.f, GetControlRotation().Yaw, 0.f));
 
     SpringArm->SetRelativeLocation(FMath::VInterpTo(SpringArm->GetRelativeLocation(), GetViewLocation(), GetWorld()->GetDeltaSeconds(), 15.0f));
-
     Camera->SetFieldOfView(FMath::FInterpTo(Camera->FieldOfView, SkeletalMeshArms->GetAnimInstance()->GetCurveValue(TEXT("Field Of View")), GetWorld()->GetDeltaSeconds(), 10.f));
 }
 
@@ -181,6 +180,11 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     FInputActionKeyMapping crouchKey("Crouching", EKeys::C, 0, 0, 0, 0);
     FInputActionKeyMapping breathKey("Breath", EKeys::CapsLock, 0, 0, 0, 0);
     FInputActionKeyMapping firetypeKey("FireType", EKeys::B, 0, 0, 0, 0);
+    FInputActionKeyMapping holsterKey("Holstering", EKeys::G, 0, 0, 0, 0);
+
+    FInputActionKeyMapping item1Key("Item1Key", EKeys::One, 0, 0, 0, 0);
+    FInputActionKeyMapping item2Key("Item2Key", EKeys::Two, 0, 0, 0, 0);
+    FInputActionKeyMapping item3Key("Item3Key", EKeys::Three, 0, 0, 0, 0);
 
     PlayerInputComponent->BindAxis("Forward", this, &ACharacterBase::MoveForward);
     PlayerInputComponent->BindAxis("Back", this, &ACharacterBase::MoveForward);
@@ -204,6 +208,10 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAction("Breath", IE_Pressed, this, &ACharacterBase::Breath);
     PlayerInputComponent->BindAction("Breath", IE_Released, this, &ACharacterBase::Breath);
     PlayerInputComponent->BindAction("FireType", IE_Pressed, this, &ACharacterBase::ChangeFireType);
+    PlayerInputComponent->BindAction("Holstering", IE_Pressed, this, &ACharacterBase::Holstering);
+    PlayerInputComponent->BindAction("Item1Key", IE_Pressed, this, &ACharacterBase::GetItemOne);
+    PlayerInputComponent->BindAction("Item2Key", IE_Pressed, this, &ACharacterBase::GetItemTwo);
+    PlayerInputComponent->BindAction("Item3Key", IE_Pressed, this, &ACharacterBase::GetItemThree);
 
 
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddAxisMapping(forwardKey);
@@ -222,6 +230,11 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(crouchKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(breathKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(firetypeKey);
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(holsterKey);
+
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(item1Key);
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(item2Key);
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(item3Key);
 }
 
 void ACharacterBase::MoveForward(float AxisValue)
@@ -256,6 +269,12 @@ bool ACharacterBase::IsAiming()
 
 void ACharacterBase::Aiming()
 {
+    if (!EquippedWeapon)
+    {
+        Logger::Log(TEXT("No Weapon"));
+        return;
+    }
+
     StopRunning();
 
     bAiming = !bAiming;
@@ -384,6 +403,7 @@ void ACharacterBase::Reload()
     }
     else
     {
+        StopAiming();
         newSegment.AnimReference = poses->Reload;
         newSegment.AnimEndTime = poses->Reload->SequenceLength;
     }
@@ -421,6 +441,7 @@ void ACharacterBase::ReloadEmpty()
     }
     else
     {
+        StopAiming();
         newSegment.AnimReference = poses->ReloadEmpty;
         newSegment.AnimEndTime = poses->ReloadEmpty->SequenceLength;
     }
@@ -502,8 +523,45 @@ void ACharacterBase::Breath()
     bBreath = !bBreath;
 }
 
+bool ACharacterBase::IsHolster()
+{
+    return bHolster;
+}
+
+void ACharacterBase::Holstering()
+{
+    if (bHoldingFire)
+        return;
+
+    if (bPlayingMontageReloading)
+        return;
+
+    if (bHolster)
+    {
+        Unholstering();
+        return;
+    }
+    UpdateWidget();
+    StopAiming();
+    bPlayingHolstering = true;
+    bHolster = true;
+}
+
+void ACharacterBase::Unholstering()
+{
+    if(!EquippedWeapon)
+        EquippedWeapon = Cast<AWeaponBase>(Inventory->GetLastItem());
+    if (EquippedWeapon)
+        EquippedWeapon->SetActorHiddenInGame(false);
+    UpdateWidget();
+    bHolster = false;
+}
+
 void ACharacterBase::StopFire()
 {
+    if (!EquippedWeapon)
+        return;
+    
     if(EquippedWeapon->GetFireType() == EFireType::Auto)
         bHoldingFire = false;
 }
@@ -563,6 +621,11 @@ void ACharacterBase::FireCore(UAnimMontage* Montage)
     {
         recoilUp *= 0.8f;
         recoilRight *= 0.8f;
+    }
+    else
+    {
+        recoilUp *= 1.2f;
+        recoilRight *= 1.2f;
     }
 
     if (bCrouching)
@@ -629,6 +692,9 @@ void ACharacterBase::StopCrouch()
 
 void ACharacterBase::StartAiming()
 {
+    if (!EquippedWeapon)
+        return;
+
     StopRunning();
 
     bAiming = true;
@@ -638,7 +704,77 @@ void ACharacterBase::StartAiming()
 
 void ACharacterBase::StopAiming()
 {
+    if (!bAiming)
+        return;
+
     bAiming = false;
 
     SET_MAX_WALK_SPEED(300.f);
+}
+
+void ACharacterBase::GetItemOne()
+{
+    NextWeapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(0));
+    if (!NextWeapon)
+        return;
+
+    if (EquippedWeapon)
+    {
+        Holstering();
+        return;
+    }
+
+    if (EquippedWeapon)
+        EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
+    Unholstering();
+}
+
+void ACharacterBase::GetItemTwo()
+{
+    NextWeapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(1));
+    if (!NextWeapon)
+        return;
+
+    if (EquippedWeapon)
+    {
+        Holstering();
+        return;
+    }
+
+    if (EquippedWeapon)
+        EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
+    Unholstering();
+}
+
+void ACharacterBase::GetItemThree()
+{
+    NextWeapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(2));
+    if (!NextWeapon)
+        return;
+
+    if (EquippedWeapon)
+    {
+        Holstering();
+        return;
+    }
+
+    if (EquippedWeapon)
+        EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
+    Unholstering();
+}
+
+void ACharacterBase::EndHolstering()
+{
+    EquippedWeapon->SetActorHiddenInGame(true);
+    Inventory->PutItem(Cast<IIItem>(EquippedWeapon));
+    EquippedWeapon = nullptr;
+    bPlayingHolstering = false;
+    bHolster = true;
+    if (NextWeapon)
+    {
+        EquippedWeapon = NextWeapon;
+        NextWeapon = nullptr;
+        EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
+        Unholstering();
+    }
 }
