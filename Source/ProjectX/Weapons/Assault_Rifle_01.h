@@ -17,4 +17,7 @@ public:
 
     void SetWeaponName() override;
 
+public:
+	EAmmoType GetWeaponAmmoType() override;
+
 };

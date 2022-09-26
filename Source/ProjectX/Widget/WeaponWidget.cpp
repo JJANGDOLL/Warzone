@@ -6,7 +6,7 @@
 #include "Core/Interfaces/IWeapon.h"
 #include "Utilities/Global.h"
 
-void UWeaponWidget::SetMaxAmmo(uint8 RemainAmmo)
+void UWeaponWidget::SetMaxAmmo(uint32 RemainAmmo)
 {
 //     int8 maxAmmo = Weapon->GetMaxAmmo();
     MaxAmmo->SetText(FText::AsNumber(RemainAmmo));

@@ -15,3 +15,8 @@ void AHandgun_01::SetWeaponName()
     WeaponName = TEXT("Handgun-01");
 
 }
+
+EAmmoType AHandgun_01::GetWeaponAmmoType()
+{
+    return EAmmoType::Small;
+}

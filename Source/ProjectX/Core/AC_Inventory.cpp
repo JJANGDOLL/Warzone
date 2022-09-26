@@ -67,3 +67,63 @@ void UAC_Inventory::PutItem(IIItem* InItem)
 	LastItem = Cast<IIItem>(InItem);
 }
 
+uint32 UAC_Inventory::GetRemainAmmo(EAmmoType AmmoType)
+{
+	uint32 remain = 0;
+	switch (AmmoType)
+	{
+		case EAmmoType::None:
+			break;
+		case EAmmoType::Big:
+			remain = BigBullet;
+			break;
+		case EAmmoType::Small:
+			remain = SmallBullet;
+			break;
+		case EAmmoType::Count:
+			break;
+		default:
+			break;
+	}
+	return remain;
+}
+
+void UAC_Inventory::SetRemainAmmo(EAmmoType AmmoType, uint32 UseAmmo)
+{
+    switch (AmmoType)
+    {
+        case EAmmoType::None:
+            break;
+        case EAmmoType::Big:
+			BigBullet -= UseAmmo;
+            break;
+        case EAmmoType::Small:
+			SmallBullet -= UseAmmo;
+            break;
+        case EAmmoType::Count:
+            break;
+        default:
+            break;
+    }
+}
+
+void UAC_Inventory::SetMaxAmmo(EAmmoType AmmoType)
+{
+	switch (AmmoType)
+	{
+		case EAmmoType::None:
+			break;
+		case EAmmoType::Big:
+			BigBullet = 200;
+			break;
+		case EAmmoType::Small:
+			SmallBullet = 100;
+			break;
+		case EAmmoType::Count:
+			break;
+		default:
+			break;
+
+	}
+}
+

@@ -18,5 +18,12 @@ void UAnimNotify_Holster::Notify(USkeletalMeshComponent* MeshComp, UAnimSequence
     ACharacterBase* character = Cast<ACharacterBase>(MeshComp->GetOwner());
     CheckNull(character);
 
-    character->EndHolstering();
+    if (bUnholster)
+    {
+        character->EndUnholstering();
+    }
+    else
+    {
+        character->EndHolstering();
+    }
 }

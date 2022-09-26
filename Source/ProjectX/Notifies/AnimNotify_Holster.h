@@ -17,4 +17,7 @@ class PROJECTX_API UAnimNotify_Holster : public UAnimNotify
 public:
     FString GetNotifyName_Implementation() const override;
     void Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation) override;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx", meta = (AllowPrivateAccess = true))
+    bool bUnholster;
 };

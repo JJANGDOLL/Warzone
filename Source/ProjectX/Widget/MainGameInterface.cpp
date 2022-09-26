@@ -12,3 +12,8 @@ UWeaponTexture* UMainGameInterface::GetWeaponImage()
 {
     return WeaponImage;
 }
+
+UInteractTextWidget* UMainGameInterface::GetInteractText()
+{
+    return InteractText;
+}

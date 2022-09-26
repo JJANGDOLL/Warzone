@@ -18,6 +18,9 @@ public:
 	ASniper_02();
 
 
+
+	EAmmoType GetWeaponAmmoType() override;
+
 protected:
 	void SetWeaponName() override;
 

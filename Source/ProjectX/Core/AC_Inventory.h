@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Datas/Weapons/WeaponsEnum.h"
 #include "AC_Inventory.generated.h"
 
 class IIMainWeapon;
@@ -28,8 +29,14 @@ protected:
 
 	TArray<IIItem*> Inventory;
 
+	uint32 BigBullet = 150;
+	uint8 SmallBullet = 80;
+
 public:
 	IIItem* GetLastItem();
 	IIItem* GetSelectedItem(uint8 Idx);
 	void PutItem(IIItem* InItem);
+	uint32 GetRemainAmmo(EAmmoType AmmoType);
+	void SetRemainAmmo(EAmmoType AmmoType, uint32 UseAmmo);
+	void SetMaxAmmo(EAmmoType AmmoType);
 };

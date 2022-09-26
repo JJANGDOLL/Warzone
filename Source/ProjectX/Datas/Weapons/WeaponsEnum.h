@@ -46,3 +46,12 @@ enum class EFireType : uint8
 };
 
 ENUM_RANGE_BY_COUNT(EFireType, EFireType::Count);
+
+UENUM(BlueprintType)
+enum class EAmmoType : uint8
+{
+    None = 0,
+    Big,
+    Small,
+    Count UMETA(Hidden)
+};

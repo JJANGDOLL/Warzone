@@ -91,8 +91,26 @@ void ABulletBase::HitCheck_Implementation(UPrimitiveComponent* OverlappedComp, A
 	}
 	else
 	{
-		UDecalComponent* decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), WallDecalMaterial, FVector::OneVector, SweepResult.ImpactPoint, SweepResult.ImpactNormal.Rotation(), 5.f);
-		decal->SetFadeScreenSize(0.0001f);
+		Logger::Log(SweepResult.GetComponent());
+		Logger::Log(SweepResult.ImpactPoint);
+		FVector offset = SweepResult.ImpactPoint - SweepResult.GetComponent()->GetComponentLocation();
+		Logger::Log(offset);
+
+		UStaticMeshComponent* sm_meshcomp = Cast<UStaticMeshComponent>(SweepResult.GetComponent());
+		if (sm_meshcomp)
+		{
+			if (sm_meshcomp->Mobility == EComponentMobility::Movable)
+			{
+				UDecalComponent* decal = UGameplayStatics::SpawnDecalAttached(WallDecalMaterial, FVector::OneVector, SweepResult.GetComponent(), NAME_None, offset, SweepResult.ImpactNormal.Rotation());
+				decal->SetFadeScreenSize(0.0001f);
+			}
+			else
+            {
+                UDecalComponent* decal = UGameplayStatics::SpawnDecalAtLocation(GetWorld(), WallDecalMaterial, FVector::OneVector, SweepResult.ImpactPoint, SweepResult.ImpactNormal.Rotation());
+                decal->SetFadeScreenSize(0.0001f);
+			}
+		}
+
 	}
 
 	Destroy();

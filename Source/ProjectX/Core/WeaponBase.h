@@ -123,6 +123,7 @@ public:
 
 	FVector2D GetRecoilIntensity() override;
 
+	EAmmoType GetWeaponAmmoType() override;
 
     USkeletalMeshComponent* GetWeaponBodyMesh();
     UStaticMeshComponent* GetWeaponMagazineMesh();

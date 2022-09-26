@@ -38,6 +38,9 @@ AEnemyBase::AEnemyBase()
 	StatusWidgetComp->SetWidgetSpace(EWidgetSpace::World);
 	StatusWidgetComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 // 	StatusWidget = Cast<UEnemyStatus>(StatusWidgetComp->GetWidget());
+
+	GetMesh()->SetGenerateOverlapEvents(true);
+	GetMesh()->SetCollisionProfileName(TEXT("Body"));
 }
 
 void AEnemyBase::Hitted(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -78,11 +81,13 @@ void AEnemyBase::Tick(float DeltaTime)
 	{
 		FRotator widgetRot = PlayerCharacter->GetCapsuleComponent()->GetForwardVector().Rotation() * -1;
 		FVector dirChar = GetActorLocation() - PlayerCharacter->GetActorLocation();
+
 		dirChar.Normalize();
 		if ( FVector::DotProduct(PlayerCharacter->GetCapsuleComponent()->GetForwardVector(), dirChar) > 0.995f)
 		{
 			StatusWidgetComp->SetVisibility(true);
-			StatusWidgetComp->SetRelativeRotation(FRotator(0.f, widgetRot.Yaw * -1, 0.f));
+			StatusWidgetComp->SetRelativeRotation(FRotator(0.f, 180.f, 0.f) - GetActorRotation());
+			StatusWidgetComp->AddRelativeRotation(FRotator(0.f, widgetRot.Yaw * -1.f, 0.f));
 		}
 		else
 		{

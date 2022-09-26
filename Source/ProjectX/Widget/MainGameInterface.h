@@ -8,6 +8,7 @@
 
 class UWeaponWidget;
 class UWeaponTexture;
+class UInteractTextWidget;
 
 UCLASS()
 class PROJECTX_API UMainGameInterface : public UUserWidget
@@ -24,4 +25,9 @@ public:
     UWeaponTexture* WeaponImage;
 
 	UWeaponTexture* GetWeaponImage();
+
+    UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UInteractTextWidget* InteractText;
+
+	UInteractTextWidget* GetInteractText();
 };

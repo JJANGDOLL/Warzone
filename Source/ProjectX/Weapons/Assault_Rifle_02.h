@@ -18,4 +18,7 @@ public:
 	AAssault_Rifle_02();
 
 	virtual void SetWeaponName() override;
+
+	EAmmoType GetWeaponAmmoType() override;
+
 };

@@ -370,3 +370,8 @@ FVector2D AWeaponBase::GetRecoilIntensity()
 	return WeaponDA->RecoilIntensity;
 }
 
+EAmmoType AWeaponBase::GetWeaponAmmoType()
+{
+	return EAmmoType::Big;
+}
+

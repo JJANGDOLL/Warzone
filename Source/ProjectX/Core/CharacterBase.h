@@ -17,6 +17,7 @@ class UAnimMontage;
 class UUSerWidget;
 class UMainGameInterface;
 class UAC_Inventory;
+class IIInteractable;
 
 UCLASS()
 class PROJECTX_API ACharacterBase : public ACharacter, public IICharacter
@@ -152,8 +153,6 @@ private:
 
 	bool bPlayingMontageReloading = false;
 
-	uint8 RemainAmmo = 200;
-
 	bool bHoldingFire = false;
 
 	uint8 BrustFireCount = 0;
@@ -171,5 +170,10 @@ private:
 
 public:
 	void EndHolstering();
+	void EndUnholstering();
+
+private:
+	IIInteractable* InteractTarget;
+	void Interact();
 };
 

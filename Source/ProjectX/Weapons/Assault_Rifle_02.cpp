@@ -14,3 +14,8 @@ void AAssault_Rifle_02::SetWeaponName()
 {
     WeaponName = TEXT("Assault-Rifle-02");
 }
+
+EAmmoType AAssault_Rifle_02::GetWeaponAmmoType()
+{
+    return EAmmoType::Big;
+}

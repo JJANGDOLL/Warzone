@@ -15,7 +15,7 @@ class PROJECTX_API UWeaponWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void SetMaxAmmo(uint8 Weapon);
+	void SetMaxAmmo(uint32 Weapon);
 	void SetCurAmmo(IIWeapon* Weapon);
 	void SetFireType(IIWeapon* Weapon);
 

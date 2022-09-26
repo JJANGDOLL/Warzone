@@ -26,6 +26,9 @@
 #include "Widget/WeaponTexture.h"
 #include "Weapons/Sniper_01.h"
 #include "AC_Inventory.h"
+#include "Kismet/GameplayStatics.h"
+#include "Interfaces/IInteractable.h"
+#include "Widget/InteractTextWidget.h"
 
 #define SET_MAX_WALK_SPEED(p) GetCharacterMovement()->MaxWalkSpeed = p;
 
@@ -141,7 +144,6 @@ void ACharacterBase::BeginPlay()
         {
             return;
         }
-        UpdateWidget();
     }
 }
 
@@ -157,6 +159,33 @@ void ACharacterBase::Tick(float DeltaTime)
 
     SpringArm->SetRelativeLocation(FMath::VInterpTo(SpringArm->GetRelativeLocation(), GetViewLocation(), GetWorld()->GetDeltaSeconds(), 15.0f));
     Camera->SetFieldOfView(FMath::FInterpTo(Camera->FieldOfView, SkeletalMeshArms->GetAnimInstance()->GetCurveValue(TEXT("Field Of View")), GetWorld()->GetDeltaSeconds(), 10.f));
+
+    if (GetController()->IsPlayerController())
+    {
+        FVector location;
+        FVector direction;
+
+        int32 sizeX;
+        int32 sizeY;
+        UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetViewportSize(sizeX, sizeY);
+        UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(GetWorld(), 0), FVector2D(sizeX / 2, sizeY / 2), location, direction);
+
+        FHitResult hitResult;
+
+        if (GetWorld()->LineTraceSingleByChannel(hitResult, location, location + direction * 200.f, ECollisionChannel::ECC_GameTraceChannel4))
+        {
+            IIInteractable* interact;
+            interact = Cast<IIInteractable>(hitResult.GetActor());
+            if (!interact)
+                return;
+            InteractTarget = interact;
+        }
+        else
+        {
+            InteractTarget = nullptr;
+        }
+        UpdateWidget();
+    }
 }
 
 // Called to bind functionality to input
@@ -186,6 +215,8 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     FInputActionKeyMapping item2Key("Item2Key", EKeys::Two, 0, 0, 0, 0);
     FInputActionKeyMapping item3Key("Item3Key", EKeys::Three, 0, 0, 0, 0);
 
+    FInputActionKeyMapping interactKey("Interact", EKeys::E, 0, 0, 0, 0);
+
     PlayerInputComponent->BindAxis("Forward", this, &ACharacterBase::MoveForward);
     PlayerInputComponent->BindAxis("Back", this, &ACharacterBase::MoveForward);
     PlayerInputComponent->BindAxis("Left", this, &ACharacterBase::MoveRight);
@@ -212,6 +243,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAction("Item1Key", IE_Pressed, this, &ACharacterBase::GetItemOne);
     PlayerInputComponent->BindAction("Item2Key", IE_Pressed, this, &ACharacterBase::GetItemTwo);
     PlayerInputComponent->BindAction("Item3Key", IE_Pressed, this, &ACharacterBase::GetItemThree);
+    PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ACharacterBase::Interact);
 
 
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddAxisMapping(forwardKey);
@@ -235,6 +267,8 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(item1Key);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(item2Key);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(item3Key);
+
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(interactKey);
 }
 
 void ACharacterBase::MoveForward(float AxisValue)
@@ -288,6 +322,9 @@ void ACharacterBase::Fire()
         return;
 
     if (bPlayingMontageReloading)
+        return;
+
+    if (bPlayingHolstering)
         return;
 
     if (EquippedWeapon->GetCurAmmo() <= 0)
@@ -376,7 +413,10 @@ void ACharacterBase::Reload()
     if (!EquippedWeapon)
         return;
 
-    if (RemainAmmo <= 0)
+    if (bPlayingHolstering)
+        return;
+
+    if (Inventory->GetRemainAmmo(EquippedWeapon->GetWeaponAmmoType()) <= 0)
         return;
 
     bPlayingMontageReloading = true;
@@ -541,7 +581,6 @@ void ACharacterBase::Holstering()
         Unholstering();
         return;
     }
-    UpdateWidget();
     StopAiming();
     bPlayingHolstering = true;
     bHolster = true;
@@ -553,8 +592,8 @@ void ACharacterBase::Unholstering()
         EquippedWeapon = Cast<AWeaponBase>(Inventory->GetLastItem());
     if (EquippedWeapon)
         EquippedWeapon->SetActorHiddenInGame(false);
-    UpdateWidget();
     bHolster = false;
+    bPlayingHolstering = true;
 }
 
 void ACharacterBase::StopFire()
@@ -578,7 +617,6 @@ void ACharacterBase::ChangeFireType()
         return;
 
     EquippedWeapon->ChangeFireType();
-    UpdateWidget();
 }
 
 void ACharacterBase::FireCore(UAnimMontage* Montage)
@@ -639,7 +677,6 @@ void ACharacterBase::FireCore(UAnimMontage* Montage)
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(Montage);
     EquippedWeapon->Fire();
 
-    UpdateWidget();
     BrustFireCount++;
 }
 
@@ -652,23 +689,31 @@ void ACharacterBase::UpdateWidget()
 
     if (EquippedWeapon)
     {
-        PlayerHUD->GetWeaponWidget()->SetMaxAmmo(RemainAmmo);
+        PlayerHUD->GetWeaponWidget()->SetMaxAmmo(Inventory->GetRemainAmmo(EquippedWeapon->GetWeaponAmmoType()));
         PlayerHUD->GetWeaponWidget()->SetCurAmmo(EquippedWeapon);
         PlayerHUD->GetWeaponWidget()->SetFireType(EquippedWeapon);
         PlayerHUD->GetWeaponImage()->SetWeaponBodyImage(EquippedWeapon);
+        if (InteractTarget)
+        {
+            PlayerHUD->GetInteractText()->SetInteractText(InteractTarget->Description());
+        }
+        else
+        {
+            PlayerHUD->GetInteractText()->SetInteractText(FText::FromString(TEXT("")));
+        }
     }
 }
 
 void ACharacterBase::OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
 {
-    int8 needAmmo = EquippedWeapon->GetMaxAmmo() - EquippedWeapon->GetCurAmmo();
+    uint8 needAmmo = EquippedWeapon->GetMaxAmmo() - EquippedWeapon->GetCurAmmo();
 
-    int8 ammotoEquip = (RemainAmmo > needAmmo  ? needAmmo  : RemainAmmo);
+    uint8 ammotoEquip = (Inventory->GetRemainAmmo(EquippedWeapon->GetWeaponAmmoType()) > needAmmo  ? needAmmo  : Inventory->GetRemainAmmo(EquippedWeapon->GetWeaponAmmoType()));
 
-    RemainAmmo -= ammotoEquip;
+
+
+    Inventory->SetRemainAmmo(EquippedWeapon->GetWeaponAmmoType(), ammotoEquip);
     EquippedWeapon->SetAmmo(ammotoEquip + EquippedWeapon->GetCurAmmo());
-
-    UpdateWidget();
 
     bPlayingMontageReloading = false;
 }
@@ -718,6 +763,13 @@ void ACharacterBase::GetItemOne()
     if (!NextWeapon)
         return;
 
+    if (EquippedWeapon == NextWeapon)
+    {
+        NextWeapon = nullptr;
+        Holstering();
+        return;
+    }
+
     if (EquippedWeapon)
     {
         Holstering();
@@ -735,6 +787,13 @@ void ACharacterBase::GetItemTwo()
     if (!NextWeapon)
         return;
 
+    if (EquippedWeapon == NextWeapon)
+    {
+        NextWeapon = nullptr;
+        Holstering();
+        return;
+    }
+
     if (EquippedWeapon)
     {
         Holstering();
@@ -751,6 +810,13 @@ void ACharacterBase::GetItemThree()
     NextWeapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(2));
     if (!NextWeapon)
         return;
+
+    if (EquippedWeapon == NextWeapon)
+    {
+        NextWeapon = nullptr;
+        Holstering();
+        return;
+    }
 
     if (EquippedWeapon)
     {
@@ -777,4 +843,18 @@ void ACharacterBase::EndHolstering()
         EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
         Unholstering();
     }
+}
+
+void ACharacterBase::EndUnholstering()
+{
+    bPlayingHolstering = false;
+    bHolster = false;
+}
+
+void ACharacterBase::Interact()
+{
+    if (!InteractTarget)
+        return;
+
+    InteractTarget->Action();
 }
