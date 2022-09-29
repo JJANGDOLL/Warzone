@@ -5,20 +5,22 @@
 #include "CoreMinimal.h"
 #include "Core/WeaponBase.h"
 #include "Core/Interfaces/IMainWeapon.h"
-#include "Assault_Rifle_01.generated.h"
+#include "SMG_01.generated.h"
 
+/**
+ * 
+ */
 UCLASS()
-class PROJECTX_API AAssault_Rifle_01 : public AWeaponBase, public IIMainWeapon
+class PROJECTX_API ASMG_01 : public AWeaponBase, public IIMainWeapon
 {
 	GENERATED_BODY()
 	
-public:	
-	// Sets default values for this actor's properties
-	AAssault_Rifle_01();
-
-    void SetWeaponName() override;
-
 public:
+	ASMG_01();
+
 	EAmmoType GetWeaponAmmoType() override;
+
+protected:
+	void SetWeaponName() override;
 
 };

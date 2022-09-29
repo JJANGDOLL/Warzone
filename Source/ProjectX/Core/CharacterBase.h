@@ -118,7 +118,7 @@ private:
     bool bHolster = false;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
-    bool bPlayingMontageHolstering = false;
+    bool bPlayingMontageUnholstering = false;
 
 protected:
 	// Test, Debug
@@ -157,6 +157,8 @@ private:
 
 private:
 	void OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+    void OnUnholsterBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+
 
 	bool bPlayingMontageReloading = false;
 
@@ -173,8 +175,6 @@ private:
     void GetItemTwo();
     void GetItemThree();
 
-	bool bPlayingHolstering = false;
-
 public:
 	void EndHolstering();
 	void EndUnholstering();
@@ -185,9 +185,12 @@ private:
 
 private:
 	void DropItem();
-	void AttachWeaponToHand();
+	void NewWeapon();
 
 public:
 	UAC_Inventory* GetInventory();
+
+private:
+	void UpdateWeaponWidget();
 };
 

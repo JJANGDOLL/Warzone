@@ -61,20 +61,20 @@ ACharacterBase::ACharacterBase()
     Helpers::GetClass(&armsAnimInst, TEXT("AnimBlueprint'/Game/ProjectX/Characters/ABP_CharacterBase.ABP_CharacterBase_C'"));
     SkeletalMeshArms->SetAnimClass(armsAnimInst);
     SkeletalMeshArms->SetBoundsScale(6.f);
-// 
-//     TestMethods.Add(ECharacterFeature::None, &ACharacterBase::DoNothing);
-//     TestMethods.Add(ECharacterFeature::Aiming, &ACharacterBase::Aiming);
-//     TestMethods.Add(ECharacterFeature::Fire, &ACharacterBase::Fire);
-//     TestMethods.Add(ECharacterFeature::Reload, &ACharacterBase::Reload);
-//     TestMethods.Add(ECharacterFeature::ReloadEmpty, &ACharacterBase::ReloadEmpty);
-//     TestMethods.Add(ECharacterFeature::Running, &ACharacterBase::Running);
 
-//     TestFeature = ECharacterFeature::None;
+    TestMethods.Add(ECharacterFeature::None, &ACharacterBase::DoNothing);
+    TestMethods.Add(ECharacterFeature::Aiming, &ACharacterBase::Aiming);
+    TestMethods.Add(ECharacterFeature::Fire, &ACharacterBase::Fire);
+    TestMethods.Add(ECharacterFeature::Reload, &ACharacterBase::Reload);
+    TestMethods.Add(ECharacterFeature::ReloadEmpty, &ACharacterBase::ReloadEmpty);
+    TestMethods.Add(ECharacterFeature::Running, &ACharacterBase::Running);
 
-//     TestWeapon = AAssault_Rifle_01::StaticClass();
-//     TestWeapon = AAssault_Rifle_02::StaticClass();
-//     TestWeapon = AHandgun_01::StaticClass();
-//     TestWeapon = ASniper_01::StaticClass();
+    TestFeature = ECharacterFeature::None;
+
+    TestWeapon = AAssault_Rifle_01::StaticClass();
+    TestWeapon = AAssault_Rifle_02::StaticClass();
+    TestWeapon = AHandgun_01::StaticClass();
+    TestWeapon = ASniper_01::StaticClass();
 
     UCharacterMovementComponent* const movementComp = GetCharacterMovement();
     movementComp->CrouchedHalfHeight = 54.f;
@@ -119,7 +119,8 @@ void ACharacterBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-    Inventory->OnWeaponChanged.AddUObject(this, &ACharacterBase::AttachWeaponToHand);
+    Inventory->OnWeaponChanged.BindUObject(this, &ACharacterBase::NewWeapon);
+    Inventory->OnWidgetUpdate.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
 
 //     if (IsWeaponEquipped())
 //         GetEquippedWeapon()->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
@@ -217,7 +218,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     FInputActionKeyMapping crouchKey("Crouching", EKeys::C, 0, 0, 0, 0);
     FInputActionKeyMapping breathKey("Breath", EKeys::CapsLock, 0, 0, 0, 0);
     FInputActionKeyMapping firetypeKey("FireType", EKeys::B, 0, 0, 0, 0);
-    FInputActionKeyMapping holsterKey("Holstering", EKeys::G, 0, 0, 0, 0);
+//     FInputActionKeyMapping holsterKey("Holstering", EKeys::G, 0, 0, 0, 0);
 
     FInputActionKeyMapping item1Key("Item1Key", EKeys::One, 0, 0, 0, 0);
     FInputActionKeyMapping item2Key("Item2Key", EKeys::Two, 0, 0, 0, 0);
@@ -248,7 +249,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAction("Breath", IE_Pressed, this, &ACharacterBase::Breath);
     PlayerInputComponent->BindAction("Breath", IE_Released, this, &ACharacterBase::Breath);
     PlayerInputComponent->BindAction("FireType", IE_Pressed, this, &ACharacterBase::ChangeFireType);
-    PlayerInputComponent->BindAction("Holstering", IE_Pressed, this, &ACharacterBase::Holstering);
+//     PlayerInputComponent->BindAction("Holstering", IE_Pressed, this, &ACharacterBase::Holstering);
     PlayerInputComponent->BindAction("Item1Key", IE_Pressed, this, &ACharacterBase::GetItemOne);
     PlayerInputComponent->BindAction("Item2Key", IE_Pressed, this, &ACharacterBase::GetItemTwo);
     PlayerInputComponent->BindAction("Item3Key", IE_Pressed, this, &ACharacterBase::GetItemThree);
@@ -272,7 +273,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(crouchKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(breathKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(firetypeKey);
-    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(holsterKey);
+//     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(holsterKey);
 
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(item1Key);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(item2Key);
@@ -299,6 +300,8 @@ FVector ACharacterBase::GetViewLocation()
 
 AWeaponBase* ACharacterBase::GetEquippedWeapon()
 {
+//     PrintLine();
+//     Logger::Log(Inventory->GetCurrentItem());
     return Cast<AWeaponBase>(Inventory->GetCurrentItem());
 }
 
@@ -338,13 +341,11 @@ void ACharacterBase::Aiming()
 void ACharacterBase::Fire()
 {
     RET_IS_UNARMED;
-    if (IsHolster())
-        return;
 
     if (bPlayingMontageReloading)
         return;
 
-    if (bPlayingHolstering)
+    if (bPlayingMontageUnholstering)
         return;
 
     if (GetEquippedWeapon()->GetCurAmmo() <= 0)
@@ -377,32 +378,7 @@ void ACharacterBase::Fire()
     newSegment.StartPos = 0.f;
     newSegment.LoopingCount = 1;
     slotAim.AnimTrack.AnimSegments.Add(newSegment);
-
-//     // add new track
-//     FSlotAnimationTrack& NewTrack = NewMontage->SlotAnimTracks[0];
-//     NewTrack.SlotName = SlotNodeName;
-//     FAnimSegment NewSegment;
-//     NewSegment.AnimReference = Asset;
-//     NewSegment.AnimStartTime = 0.f;
-//     NewSegment.AnimEndTime = Asset->SequenceLength;
-//     NewSegment.AnimPlayRate = 1.f;
-//     NewSegment.StartPos = 0.f;
-//     NewSegment.LoopingCount = LoopCount;
-//     NewMontage->SequenceLength = NewSegment.GetLength();
-//     NewTrack.AnimTrack.AnimSegments.Add(NewSegment);
-// 
-//     FCompositeSection NewSection;
-//     NewSection.SectionName = TEXT("Default");
-//     NewSection.LinkSequence(Asset, Asset->SequenceLength);
-//     NewSection.SetTime(0.0f);
-// 
-//     montage->AddSlot(TEXT("Overlay Running"));
-//     montage->AddSlot(TEXT("Overlay Lowered"));
-
-
     montage->SetPreviewMesh(SkeletalMeshArms->SkeletalMesh);
-
-//     Logger::Log(montage);
 
     FireDelegate = FTimerDelegate::CreateUObject(this, &ACharacterBase::FireCore, montage);
 
@@ -427,16 +403,13 @@ void ACharacterBase::Fire()
 
 void ACharacterBase::Reload()
 {
-    if (IsHolster())
-        return;
-
     if (bPlayingMontageReloading)
         return;
 
     if (!GetEquippedWeapon())
         return;
 
-    if (bPlayingHolstering)
+    if (bPlayingMontageUnholstering)
         return;
 
     if (Inventory->GetRemainAmmo(GetEquippedWeapon()->GetWeaponAmmoType()) <= 0)
@@ -595,51 +568,42 @@ void ACharacterBase::Holstering()
 {
     RET_IS_UNARMED;
 
-    if (bPlayingHolstering)
-        return;
-
     if (bHoldingFire)
         return;
 
     if (bPlayingMontageReloading)
         return;
-
-    if (bHolster)
-    {
-        Unholstering();
-        return;
-    }
-
-    if (PlayerHUD)
-    {
-        PlayerHUD->GetWeaponWidget()->SetVisibility(ESlateVisibility::Hidden);
-        PlayerHUD->GetWeaponImage()->SetVisibility(ESlateVisibility::Hidden);
-    }
-
-    StopAiming();
-    bPlayingHolstering = true;
-    bHolster = true;
 }
 
 void ACharacterBase::Unholstering()
 {
-    if (bPlayingHolstering)
+    if (bPlayingMontageUnholstering)
         return;
 
-    AWeaponBase* weapon = Cast<AWeaponBase>(Inventory->GetCurrentItem());
-    if (!weapon)
-        return;
+    bPlayingMontageUnholstering = true;
 
-    weapon->SetActorHiddenInGame(false);
+    GetEquippedWeapon()->SetActorHiddenInGame(false);
 
-    bHolster = false;
-    bPlayingHolstering = true;
-    if (PlayerHUD)
-    {
-        PlayerHUD->GetWeaponWidget()->SetVisibility(ESlateVisibility::Visible);
-        PlayerHUD->GetWeaponImage()->SetVisibility(ESlateVisibility::Visible);
-    }
-    UpdateWidget();
+    UWeaponPoseDA* poses = GetEquippedWeapon()->GetPosesDA();
+
+    UAnimMontage* montage = UAnimMontage::CreateSlotAnimationAsDynamicMontage(poses->Unholster, TEXT("Overlay Standing"), 0.f, 0.f, 1.f);
+
+    FSlotAnimationTrack& slotAim = montage->AddSlot(TEXT("Overlay Aiming"));
+
+    FAnimSegment newSegment;
+    newSegment.AnimReference = poses->Unholster;
+    newSegment.AnimEndTime = poses->Unholster->SequenceLength;
+    newSegment.AnimStartTime = 0.f;
+    newSegment.AnimPlayRate = 1.f;
+    newSegment.StartPos = 0.f;
+    newSegment.LoopingCount = 1;
+    slotAim.AnimTrack.AnimSegments.Add(newSegment);
+
+    SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
+
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &ACharacterBase::OnUnholsterBlendOut);
+    SkeletalMeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, montage);
 }
 
 void ACharacterBase::StopFire()
@@ -666,6 +630,8 @@ void ACharacterBase::ChangeFireType()
 
 void ACharacterBase::FireCore(UAnimMontage* Montage)
 {
+    RET_IS_UNARMED;
+
     if (GetEquippedWeapon()->GetFireType() == EFireType::Auto && GetEquippedWeapon()->GetCurAmmo() <= 0)
     {
         bHoldingFire = false;
@@ -738,18 +704,7 @@ bool ACharacterBase::IsWeaponEquipped()
 
 void ACharacterBase::UpdateWidget()
 {
-    if (!PlayerHUD)
-    {
-        return;
-    }
 
-    if (Inventory->GetCurrentItem() && !IsHolster())
-    {
-        PlayerHUD->GetWeaponWidget()->SetMaxAmmo(Inventory->GetRemainAmmo(GetEquippedWeapon()->GetWeaponAmmoType()));
-        PlayerHUD->GetWeaponWidget()->SetCurAmmo(GetEquippedWeapon());
-        PlayerHUD->GetWeaponWidget()->SetFireType(GetEquippedWeapon());
-        PlayerHUD->GetWeaponImage()->SetWeaponBodyImage(GetEquippedWeapon());
-    }
 
     if (InteractTarget)
     {
@@ -767,12 +722,17 @@ void ACharacterBase::OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupt
 
     uint8 ammotoEquip = (Inventory->GetRemainAmmo(GetEquippedWeapon()->GetWeaponAmmoType()) > needAmmo  ? needAmmo  : Inventory->GetRemainAmmo(GetEquippedWeapon()->GetWeaponAmmoType()));
 
-
-
     Inventory->SetRemainAmmo(GetEquippedWeapon()->GetWeaponAmmoType(), ammotoEquip);
     GetEquippedWeapon()->SetAmmo(ammotoEquip + GetEquippedWeapon()->GetCurAmmo());
 
     bPlayingMontageReloading = false;
+}
+
+void ACharacterBase::OnUnholsterBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+    PrintLine();
+
+    bPlayingMontageUnholstering = false;
 }
 
 void ACharacterBase::StartCrouch()
@@ -816,76 +776,91 @@ void ACharacterBase::StopAiming()
 
 void ACharacterBase::GetItemOne()
 {
-//     NextWeapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(0));
-//     if (!NextWeapon)
-//         return;
-// 
-//     if (EquippedWeapon == NextWeapon)
-//     {
-//         NextWeapon = nullptr;
-//         Holstering();
-//         return;
-//     }
-// 
-//     if (EquippedWeapon)
-//     {
-//         Holstering();
-//         return;
-//     }
-// 
-//     if (EquippedWeapon)
-//         EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
-//     Unholstering();
+    if (bPlayingMontageUnholstering)
+        return;
+
+    if (bPlayingMontageReloading)
+        return;
+
+    if (bHoldingFire)
+        return;
+
+    AWeaponBase* weapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(0));
+    if (!weapon)
+        return;
+
+
+    if (GetEquippedWeapon())
+    {
+        if (weapon == GetEquippedWeapon())
+            return;
+
+        GetEquippedWeapon()->SetActorHiddenInGame(true);
+    }
+
+    if (weapon == GetEquippedWeapon())
+    {
+        return;
+    }
+
+    Inventory->SetSelectedItem(0);
+
+    GetEquippedWeapon()->SetActorHiddenInGame(false);
+    Unholstering();
 }
 
 void ACharacterBase::GetItemTwo()
 {
-//     NextWeapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(1));
-//     if (!NextWeapon)
-//         return;
-// 
-//     if (EquippedWeapon == NextWeapon)
-//     {
-//         NextWeapon = nullptr;
-//         Holstering();
-//         return;
-//     }
-// 
-//     if (EquippedWeapon)
-//     {
-//         Holstering();
-//         return;
-//     }
-// 
-//     if (EquippedWeapon)
-//         EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
-//     Unholstering();
+    if (bPlayingMontageUnholstering)
+        return;
+
+    if (bPlayingMontageReloading)
+        return;
+
+    if (bHoldingFire)
+        return;
+
+    AWeaponBase* weapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(1));
+    if (!weapon)
+        return;
+
+    if (weapon == GetEquippedWeapon())
+    {
+        return;
+    }
+
+    GetEquippedWeapon()->SetActorHiddenInGame(true);
+    Inventory->SetSelectedItem(1);
+
+    GetEquippedWeapon()->SetActorHiddenInGame(false);
+    Unholstering();
 }
 
 void ACharacterBase::GetItemThree()
 {
-//     return;
-// 
-//     NextWeapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(2));
-//     if (!NextWeapon)
-//         return;
-// 
-//     if (EquippedWeapon == NextWeapon)
-//     {
-//         NextWeapon = nullptr;
-//         Holstering();
-//         return;
-//     }
-// 
-//     if (EquippedWeapon)
-//     {
-//         Holstering();
-//         return;
-//     }
-// 
-//     if (EquippedWeapon)
-//         EquippedWeapon->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
-//     Unholstering();
+    if (bPlayingMontageUnholstering)
+        return;
+
+    if (bPlayingMontageReloading)
+        return;
+
+    if (bHoldingFire)
+        return;
+
+    AWeaponBase* weapon = Cast<AWeaponBase>(Inventory->GetSelectedItem(2));
+    if (!weapon)
+        return;
+
+    if (weapon == GetEquippedWeapon())
+    {
+        return;
+    }
+
+    GetEquippedWeapon()->SetActorHiddenInGame(true);
+    Inventory->SetSelectedItem(2);
+
+    GetEquippedWeapon()->SetActorHiddenInGame(false);
+    Unholstering();
 }
 
 void ACharacterBase::EndHolstering()
@@ -896,14 +871,16 @@ void ACharacterBase::EndHolstering()
     weapon->SetActorHiddenInGame(true);
 
     bHolster = true;
-    bPlayingHolstering = false;
+    bPlayingMontageUnholstering = false;
 }
 
 void ACharacterBase::EndUnholstering()
 {
+    return;
+
     RET_IS_UNARMED;
 
-    bPlayingHolstering = false;
+    bPlayingMontageUnholstering = false;
     bHolster = false;
 }
 
@@ -912,17 +889,21 @@ void ACharacterBase::Interact()
     if (!InteractTarget)
         return;
 
+    if (bPlayingMontageReloading)
+        return;
+
+    if (bPlayingMontageUnholstering)
+        return;
+
+    if (bHoldingFire)
+        return;
+
     InteractTarget->Action();
 }
 
 void ACharacterBase::DropItem()
 {
-    PrintLine();
-    if (!EquippedWeapon)
-        return;
-
-    if (bHolster)
-        return;
+    RET_IS_UNARMED;
 
     if (bPlayingMontageReloading)
         return;
@@ -930,20 +911,54 @@ void ACharacterBase::DropItem()
     if (bHoldingFire)
         return;
 
-    if (bPlayingHolstering)
+    if (bPlayingMontageUnholstering)
         return;
 
     Inventory->DropItem();
-    EquippedWeapon = nullptr;
-    bHolster = true;
 }
 
-void ACharacterBase::AttachWeaponToHand()
+void ACharacterBase::NewWeapon()
 {
+    UpdateWeaponWidget();
+
+    RET_IS_UNARMED;
+
     GetEquippedWeapon()->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
+
+    Unholstering();
+
+
+    GetEquippedWeapon()->OnWeaponFire.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
+    GetEquippedWeapon()->OnWeaponFiretypeChanged.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
+    GetEquippedWeapon()->OnWeaponReload.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
 }
 
 UAC_Inventory* ACharacterBase::GetInventory()
 {
     return Inventory;
+}
+
+void ACharacterBase::UpdateWeaponWidget()
+{
+    if (IS_UNARMED)
+    {
+        PlayerHUD->GetWeaponImage()->SetVisibility(ESlateVisibility::Hidden);
+        PlayerHUD->GetWeaponWidget()->SetVisibility(ESlateVisibility::Hidden);
+    }
+
+    if (!PlayerHUD)
+    {
+        return;
+    }
+
+    PlayerHUD->GetWeaponImage()->SetVisibility(ESlateVisibility::Visible);
+    PlayerHUD->GetWeaponWidget()->SetVisibility(ESlateVisibility::Visible);
+
+    if (Inventory->GetCurrentItem())
+    {
+        PlayerHUD->GetWeaponWidget()->SetMaxAmmo(Inventory->GetRemainAmmo(GetEquippedWeapon()->GetWeaponAmmoType()));
+        PlayerHUD->GetWeaponWidget()->SetCurAmmo(GetEquippedWeapon());
+        PlayerHUD->GetWeaponWidget()->SetFireType(GetEquippedWeapon());
+        PlayerHUD->GetWeaponImage()->SetWeaponBodyImage(GetEquippedWeapon());
+    }
 }

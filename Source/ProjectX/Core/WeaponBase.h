@@ -24,6 +24,8 @@ class USoundCue;
 class UTexture;
 
 DECLARE_DELEGATE(FWeaponFire)
+DECLARE_DELEGATE(FWeaponFiretypeChange)
+DECLARE_DELEGATE(FWeaponReload);
 
 UCLASS(Abstract)
 class PROJECTX_API AWeaponBase : public AActor, public IIWeapon, public IIItem, public IIInteractable
@@ -173,6 +175,8 @@ protected:
 
 public:
 	FWeaponFire OnWeaponFire;
+	FWeaponFiretypeChange OnWeaponFiretypeChanged;
+	FWeaponReload OnWeaponReload;
 };
 
 

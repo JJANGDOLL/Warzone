@@ -9,6 +9,7 @@
 #include "Weapons/Sniper_02.h"
 #include "Utilities/Global.h"
 #include "CharacterBase.h"
+#include "Interfaces/ISubWeapon.h"
 
 // Sets default values for this component's properties
 UAC_Inventory::UAC_Inventory()
@@ -26,24 +27,12 @@ void UAC_Inventory::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Inventory.Init(nullptr, 2);
+	Inventory.Init(nullptr, 3);
 
-// 	AWeaponBase* weapon;
-// 	if (!Inventory[0])
-// 	{
-// 		weapon = GetWorld()->SpawnActor<AWeaponBase>(AAssault_Rifle_01::StaticClass(), GetOwner()->GetActorTransform());
-// 		weapon->SetOwner(GetOwner());
-// 		Inventory[0] = Cast<IIItem>(weapon);
-// 		CurrentItem = &(Inventory[0]);
-// 	}
-// 
-//     if (!Inventory[1])
-//     {
-// 		weapon = GetWorld()->SpawnActor<AWeaponBase>(ASniper_02::StaticClass(), GetOwner()->GetActorTransform());
-//         weapon->SetOwner(GetOwner());
-//         weapon->SetActorHiddenInGame(true);
-//         Inventory[1] = Cast<IIItem>(weapon);
-//     }
+// 	AddWeapon(AAssault_Rifle_01::StaticClass(), 0);
+//     AddWeapon(AAssault_Rifle_02::StaticClass(), 1);
+//     AddWeapon(AHandgun_01::StaticClass(), 2);
+// 	CurrentItem = &(Inventory[0]);
 
 //     if (!Inventory[2])
 //     {
@@ -64,6 +53,15 @@ void UAC_Inventory::BeginPlay()
 // 	PrintLine();
 }
 
+void UAC_Inventory::AddWeapon(TSubclassOf<AWeaponBase> WeaponClass, uint8 Idx)
+{
+    AWeaponBase* weapon;
+
+    weapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass, GetOwner()->GetActorTransform());
+    weapon->SetOwner(GetOwner());
+	Inventory[Idx] = weapon;
+}
+
 
 
 IIItem* UAC_Inventory::GetLastItem()
@@ -77,8 +75,15 @@ IIItem* UAC_Inventory::GetSelectedItem(uint8 Idx)
 {
 	if (!Inventory[Idx])
 		return nullptr;
-	CurrentItem = &Inventory[Idx];
+// 	CurrentItem = &Inventory[Idx];
 	return Inventory[Idx];
+}
+
+void UAC_Inventory::SetSelectedItem(uint8 Idx)
+{
+	CurrentItem = &Inventory[Idx];
+
+	OnWidgetUpdate.ExecuteIfBound();
 }
 
 void UAC_Inventory::PutItem(IIItem* InItem)
@@ -104,6 +109,7 @@ uint32 UAC_Inventory::GetRemainAmmo(EAmmoType AmmoType)
 		default:
 			break;
 	}
+
 	return remain;
 }
 
@@ -124,6 +130,7 @@ void UAC_Inventory::SetRemainAmmo(EAmmoType AmmoType, uint32 UseAmmo)
         default:
             break;
     }
+
 }
 
 void UAC_Inventory::SetMaxAmmo(EAmmoType AmmoType)
@@ -144,48 +151,96 @@ void UAC_Inventory::SetMaxAmmo(EAmmoType AmmoType)
 			break;
 
 	}
+
+    OnWidgetUpdate.ExecuteIfBound();
 }
 
-void UAC_Inventory::DropItem()
+void UAC_Inventory::DropItem(bool bNextWeapon)
 {
-	Logger::Log(Cast<AActor>(*CurrentItem));
+	if (!CurrentItem)
+		return;
 
 	if (!*CurrentItem)
 		return;
 
 	AWeaponBase* weapon = Cast<AWeaponBase>(*CurrentItem);
 	weapon->SetOwner(nullptr);
+	weapon->SetActorHiddenInGame(false);
+    weapon->GetWeaponBodyMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	weapon->DetachFromActor(FDetachmentTransformRules::KeepRelativeTransform);
 	weapon->GetWeaponBodyMesh()->SetSimulatePhysics(true);
-	weapon->GetWeaponBodyMesh()->AddImpulse(FVector(GetOwner()->GetActorForwardVector())* 40000.f);
+	weapon->GetWeaponBodyMesh()->AddImpulse(FVector(GetOwner()->GetActorForwardVector()) * 25000.f + FVector(GetOwner()->GetActorUpVector()) * 15000.f + FVector(GetOwner()->GetActorRightVector()) * 1.f);
+
 	*CurrentItem = nullptr;
+	if (bNextWeapon)
+	{
+        if (Inventory[0] != nullptr)
+            CurrentItem = &Inventory[0];
+        else if (Inventory[1] != nullptr)
+            CurrentItem = &Inventory[1];
+        else if (Inventory[2] != nullptr)
+            CurrentItem = &Inventory[2];
+	}
+
+
+    OnWeaponChanged.ExecuteIfBound();
 }
 
 void UAC_Inventory::PickupItem(IIItem* PickupItem)
 {
-	IIItem** prevItem = CurrentItem;
+	Logger::Log(Cast<AWeaponBase>(PickupItem));
 
-    if (!Inventory[0])
-    {
-        Inventory[0] = PickupItem;
-        CurrentItem = &Inventory[0];
-    }
+	Cast<AWeaponBase>(PickupItem)->GetWeaponBodyMesh()->SetSimulatePhysics(false);
+	Cast<AWeaponBase>(PickupItem)->GetWeaponBodyMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
-    else if (!Inventory[1])
-    {
-        Inventory[1] = PickupItem;
-        CurrentItem = &Inventory[1];
-    }
-
-	else if (*CurrentItem)
+	if (Cast<IIMainWeapon>(PickupItem))
 	{
-		DropItem();
+        if (!Inventory[0])
+        {
+            if (CurrentItem && *CurrentItem)
+            {
+                Cast<AWeaponBase>(*CurrentItem)->SetActorHiddenInGame(true);
+            }
+            Inventory[0] = PickupItem;
+            CurrentItem = &Inventory[0];
+        }
+
+        else if (!Inventory[1])
+        {
+            if (CurrentItem && *CurrentItem)
+                Cast<AWeaponBase>(*CurrentItem)->SetActorHiddenInGame(true);
+            Inventory[1] = PickupItem;
+            CurrentItem = &Inventory[1];
+        }
+
+        else if (CurrentItem && *CurrentItem)
+        {
+
+            DropItem(false);
+            *CurrentItem = PickupItem;
+        }
+	}
+	else if (Cast<IISubWeapon>(PickupItem))
+	{
+        if (CurrentItem && *CurrentItem)
+            Cast<AWeaponBase>(*CurrentItem)->SetActorHiddenInGame(true);
+
+		CurrentItem = &Inventory[2];
+		if (CurrentItem && *CurrentItem)
+		{
+			DropItem(false);
+		}
 		*CurrentItem = PickupItem;
 	}
 
-	OnWeaponChanged.Broadcast();
+
+
+
+	OnWeaponChanged.ExecuteIfBound();
 	PrintLine();
 }
+
+
 
 void UAC_Inventory::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {

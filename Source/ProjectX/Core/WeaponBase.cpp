@@ -18,6 +18,8 @@
 #include "CharacterBase.h"
 #include "AC_Inventory.h"
 
+#define LOCTEXT_NAMESPACE "MyNamespace"
+
 // Sets default values
 AWeaponBase::AWeaponBase()
 {
@@ -310,6 +312,7 @@ void AWeaponBase::Reload()
         if (ReloadEmptySound)
             UGameplayStatics::PlaySoundAtLocation(GetWorld(), ReloadEmptySound, GetActorLocation());
 	}
+
 }
 
 void AWeaponBase::Fire()
@@ -318,6 +321,8 @@ void AWeaponBase::Fire()
 	if(FireSound)
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetActorLocation());
 	CurrentAmmo--;
+
+	OnWeaponFire.ExecuteIfBound();
 }
 
 USkeletalMeshComponent* AWeaponBase::GetWeaponBodyMesh()
@@ -347,11 +352,14 @@ void AWeaponBase::ChangeFireType()
 	{
 		FireTypeIdx = 0;
 	}
+
+	OnWeaponFiretypeChanged.ExecuteIfBound();
 }
 
 void AWeaponBase::OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
 {
 	bReloading = false;
+    OnWeaponReload.ExecuteIfBound();
 }
 
 void AWeaponBase::Action()
@@ -366,7 +374,7 @@ void AWeaponBase::Action()
 
 FText AWeaponBase::Description()
 {
-	return FText::FromString(TEXT("Weapon Base"));
+	return FText::Format(LOCTEXT("WeaponDetail", "Equip {0}"), FText::FromName(WeaponName));
 }
 
 IIItem* AWeaponBase::GetItem()
@@ -399,3 +407,4 @@ EAmmoType AWeaponBase::GetWeaponAmmoType()
 	return EAmmoType::Big;
 }
 
+#undef LOCTEXT_NAMESPACE

@@ -15,7 +15,8 @@ class UIItem;
 class AWeaponBase;
 
 
-DECLARE_MULTICAST_DELEGATE(FWeaponChangeDelegate);
+DECLARE_DELEGATE(FWeaponChangeDelegate);
+DECLARE_DELEGATE(FNeedWidgetUpdate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTX_API UAC_Inventory : public UActorComponent
@@ -45,12 +46,15 @@ protected:
 public:
 	IIItem* GetLastItem();
 	IIItem* GetSelectedItem(uint8 Idx);
+	void SetSelectedItem(uint8 Idx);
 	void PutItem(IIItem* InItem);
 	uint32 GetRemainAmmo(EAmmoType AmmoType);
 	void SetRemainAmmo(EAmmoType AmmoType, uint32 UseAmmo);
 	void SetMaxAmmo(EAmmoType AmmoType);
-	void DropItem();
+	void DropItem(bool bNextWeapon = true);
 	void PickupItem(IIItem* PickupItem);
+
+	void AddWeapon(TSubclassOf<AWeaponBase> WeaponClass, uint8 Idx);
 
 	void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -60,4 +64,5 @@ public:
 
 public:
 	FWeaponChangeDelegate OnWeaponChanged;
+	FNeedWidgetUpdate OnWidgetUpdate;
 };

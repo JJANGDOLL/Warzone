@@ -9,6 +9,8 @@
 /**
  * 
  */
+DECLARE_DELEGATE_OneParam(FWeaponMontageChange, class AWeaponBase*)
+
 class UAnimSequenceBase;
 
 UCLASS()
