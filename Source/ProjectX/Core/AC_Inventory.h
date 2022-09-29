@@ -5,10 +5,17 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Datas/Weapons/WeaponsEnum.h"
+#include "UObject/WeakInterfacePtr.h"
 #include "AC_Inventory.generated.h"
+
 
 class IIMainWeapon;
 class IIItem;
+class UIItem;
+class AWeaponBase;
+
+
+DECLARE_MULTICAST_DELEGATE(FWeaponChangeDelegate);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PROJECTX_API UAC_Inventory : public UActorComponent
@@ -26,11 +33,14 @@ protected:
 	uint8 SelectedIdx = 0;
 
 	IIItem* LastItem;
+	IIItem** CurrentItem;
+// 	TWeakObjectPtr<IIItem*> CurrentItem;
 
 	TArray<IIItem*> Inventory;
 
 	uint32 BigBullet = 150;
 	uint8 SmallBullet = 80;
+	bool bWeaponChanged = false;
 
 public:
 	IIItem* GetLastItem();
@@ -39,4 +49,15 @@ public:
 	uint32 GetRemainAmmo(EAmmoType AmmoType);
 	void SetRemainAmmo(EAmmoType AmmoType, uint32 UseAmmo);
 	void SetMaxAmmo(EAmmoType AmmoType);
+	void DropItem();
+	void PickupItem(IIItem* PickupItem);
+
+	void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	IIItem* GetCurrentItem();
+
+	bool IsWeaponChanged();
+
+public:
+	FWeaponChangeDelegate OnWeaponChanged;
 };

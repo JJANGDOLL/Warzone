@@ -2,5 +2,6 @@
 
 
 #include "Core/Interfaces/IInteractable.h"
+#include "Utilities/Global.h"
 
 // Add default functionality here for any IIInteractable functions that are not pure virtual.

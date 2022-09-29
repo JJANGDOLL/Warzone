@@ -16,6 +16,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Sound/SoundCue.h"
 #include "CharacterBase.h"
+#include "AC_Inventory.h"
 
 // Sets default values
 AWeaponBase::AWeaponBase()
@@ -37,6 +38,9 @@ AWeaponBase::AWeaponBase()
     TestMethods.Add(EWeaponFeature::SpawnFlame, &AWeaponBase::SpawnFlame);
 
 	TestFeature = EWeaponFeature::None;
+
+	Weapon->SetGenerateOverlapEvents(true);
+	Weapon->SetCollisionProfileName(TEXT("InteractObject"));
 }
 
 // Called when the game starts or when spawned
@@ -348,6 +352,26 @@ void AWeaponBase::ChangeFireType()
 void AWeaponBase::OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
 {
 	bReloading = false;
+}
+
+void AWeaponBase::Action()
+{
+	ACharacterBase* playerChar = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	SetOwner(playerChar );
+	UAC_Inventory* inventory = Helpers::GetComponent<UAC_Inventory>(playerChar);
+	inventory->PickupItem(GetItem());
+
+// 	AttachToComponent(playerChar->GetMeshArms(), FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
+}
+
+FText AWeaponBase::Description()
+{
+	return FText::FromString(TEXT("Weapon Base"));
+}
+
+IIItem* AWeaponBase::GetItem()
+{
+	return this;
 }
 
 bool AWeaponBase::IsReloading()

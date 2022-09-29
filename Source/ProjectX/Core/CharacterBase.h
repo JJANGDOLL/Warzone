@@ -47,6 +47,9 @@ protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Components", meta = (AllowPrivateAccess = true))
 	UAC_Inventory* Inventory;
 
+public:
+	USkeletalMeshComponent* GetMeshArms();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -91,9 +94,13 @@ public:
 	void ChangeFireType();
 	void FireCore(UAnimMontage* Montage);
 
+	bool IsWeaponEquipped();
+// 	AWeaponBase* GetEquippedWeapon();
+	void UpdateEquippedWeapon();
+
 private:
-    AWeaponBase* EquippedWeapon;
-    AWeaponBase* NextWeapon;
+    AWeaponBase** EquippedWeapon;
+//     AWeaponBase* NextWeapon;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | State", meta = (AllowPrivateAccess = true))
 	bool bAiming;
@@ -175,5 +182,12 @@ public:
 private:
 	IIInteractable* InteractTarget;
 	void Interact();
+
+private:
+	void DropItem();
+	void AttachWeaponToHand();
+
+public:
+	UAC_Inventory* GetInventory();
 };
 

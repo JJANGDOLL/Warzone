@@ -9,7 +9,7 @@
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UIMainWeapon : public UIItem
+class UIMainWeapon : public UInterface
 {
 	GENERATED_BODY()
 };

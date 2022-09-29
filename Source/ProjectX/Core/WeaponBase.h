@@ -7,6 +7,8 @@
 #include "Datas/Weapons/WeaponsEnum.h"
 #include "Interfaces/IWeapon.h"
 #include "Interfaces/IMainWeapon.h"
+#include "Interfaces/IInteractable.h"
+#include "Interfaces/IItem.h"
 #include "WeaponBase.generated.h"
 
 class UWeaponBody;
@@ -21,8 +23,10 @@ class UWeaponPoseDA;
 class USoundCue;
 class UTexture;
 
+DECLARE_DELEGATE(FWeaponFire)
+
 UCLASS(Abstract)
-class PROJECTX_API AWeaponBase : public AActor, public IIWeapon, public IIMainWeapon
+class PROJECTX_API AWeaponBase : public AActor, public IIWeapon, public IIItem, public IIInteractable
 {
 	GENERATED_BODY()
 	
@@ -133,6 +137,12 @@ public:
 	void ChangeFireType();
 	void OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
 	
+	void Action() override;
+	FText Description() override;
+
+
+	IIItem* GetItem() override;
+
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess=true))
 	float EjectImpulse = 350.f;
@@ -157,6 +167,12 @@ private:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
     USoundCue* ReloadEmptySound;
+
+protected:
+	FText WeaponDescription;
+
+public:
+	FWeaponFire OnWeaponFire;
 };
 
 

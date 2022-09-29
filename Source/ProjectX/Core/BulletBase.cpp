@@ -27,7 +27,7 @@ ABulletBase::ABulletBase()
 	Helpers::CreateComponent(this, &ParticlesRoot, TEXT("Particles Root"), CollisionBox);
 	Helpers::CreateComponent(this, &ParticlesTrail, TEXT("Particles Trail"), ParticlesRoot);
 
-	Helpers::CreateActorComponent(this, &Projectile, TEXT("Projectile (Movement)"));
+	Helpers::CreateActorComponent(this, &Projectile, TEXT("Projectile (Movement)")); 
 
 // 	ProjectileMesh->AddRelativeRotation(FRotator(0.f, -90.f, 0.f));
 

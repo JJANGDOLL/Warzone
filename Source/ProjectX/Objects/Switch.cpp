@@ -37,11 +37,8 @@ ASwitch::ASwitch()
 
 void ASwitch::Action()
 {
-	PrintLine();
-
 	if (!Target)
 		return;
-
 
 	bDir = !bDir;
 }
