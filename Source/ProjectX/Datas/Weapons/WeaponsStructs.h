@@ -17,3 +17,16 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	class UPrimaryDataAsset* DataRef;
 };
+
+USTRUCT(BlueprintType)
+struct FWeaponScopeDARef : public FTableRowBase
+{
+    GENERATED_BODY()
+
+public:
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    EScopeType WeaponType;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    class UPrimaryDataAsset* DataRef;
+};

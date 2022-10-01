@@ -14,6 +14,7 @@ enum class EWeaponTypes : uint8
     SHOTGUN_01,
     SNIPER_01,
     SNIPER_02,
+    SNIPER_03,
     SMG_01,
     Count UMETA(Hidden)
 };
@@ -55,5 +56,13 @@ enum class EAmmoType : uint8
     None = 0,
     Big,
     Small,
+    Count UMETA(Hidden)
+};
+
+UENUM(BlueprintType)
+enum class EScopeType : uint8
+{
+    None = 0,
+    SCOPE_01,
     Count UMETA(Hidden)
 };

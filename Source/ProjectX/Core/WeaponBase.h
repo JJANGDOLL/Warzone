@@ -22,6 +22,7 @@ class UParticleSystem;
 class UWeaponPoseDA;
 class USoundCue;
 class UTexture;
+class UScopeTemp;
 
 DECLARE_DELEGATE(FWeaponFire)
 DECLARE_DELEGATE(FWeaponFiretypeChange)
@@ -52,9 +53,25 @@ protected:
 	UPROPERTY()
 	UWeaponAttachment* IronSight;
 
+	UPROPERTY()
+	USceneComponent* SocketScope;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "", meta = (AllowPrivateAccess = true))
+	UScopeTemp* Scope;
+
 protected:
 	UPROPERTY()
 	EWeaponTypes WeaponType;
+
+    UPROPERTY(EditInstanceOnly, Category = "Projx | Weapon | Test", meta = (AllowPrivateAccess = true))
+	bool TestScope;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    UTextureRenderTarget2D* TextureRender;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    USceneCaptureComponent2D* SceneCaptureScope;
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -144,6 +161,9 @@ public:
 
 
 	IIItem* GetItem() override;
+
+
+	class UTexture2D* GetWeaponScopeImage() override;
 
 private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess=true))

@@ -50,6 +50,7 @@ public:
 
 	virtual class UTexture2D* GetWeaponBodyImage() = 0;
     virtual class UTexture2D* GetWeaponMagazineImage() = 0;
+    virtual class UTexture2D* GetWeaponScopeImage() = 0;
 
 	virtual EAmmoType GetWeaponAmmoType() = 0;
 };

@@ -17,6 +17,9 @@
 #include "Sound/SoundCue.h"
 #include "CharacterBase.h"
 #include "AC_Inventory.h"
+#include "Weapons/Attachments/ScopeTemp.h"
+#include "Components/SceneCaptureComponent2D.h"
+#include "Engine/TextureRenderTarget2D.h"
 
 #define LOCTEXT_NAMESPACE "MyNamespace"
 
@@ -31,6 +34,9 @@ AWeaponBase::AWeaponBase()
 	Helpers::CreateComponent(this, &Magazine, TEXT("Magazine"), SocketMagazine);
     Helpers::CreateComponent(this, &SocketIronSight, TEXT("Socket_IronSight"), Weapon, TEXT("SOCKET_Default"));
     Helpers::CreateComponent(this, &IronSight, TEXT("Ironsight"), SocketIronSight);
+	Helpers::CreateComponent(this, &SocketScope, TEXT("Socket_Scope"), Weapon, TEXT("SOCKET_Scope"));
+	Helpers::CreateComponent(this, &Scope, TEXT("Scope"), SocketScope);
+	Helpers::CreateComponent(this, &SceneCaptureScope, TEXT("SceneCapture"), Scope, TEXT("SOCKET_Render"));
 
 	TestMethods.Add(EWeaponFeature::None, &AWeaponBase::DoNothing);
 	TestMethods.Add(EWeaponFeature::Reload, &AWeaponBase::Reload);
@@ -43,6 +49,8 @@ AWeaponBase::AWeaponBase()
 
 	Weapon->SetGenerateOverlapEvents(true);
 	Weapon->SetCollisionProfileName(TEXT("InteractObject"));
+
+    Helpers::GetAsset(&TextureRender, TEXT("TextureRenderTarget2D'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/_Common/Attachments/Textures/RT_ATT_Scope_01.RT_ATT_Scope_01'"));
 }
 
 // Called when the game starts or when spawned
@@ -54,7 +62,28 @@ void AWeaponBase::BeginPlay()
 	
     OnTestFeature = TestMethods[TestFeature];
 
+	Logger::Log(Scope);
+
 	GetWorldTimerManager().SetTimer(TestTimerHandle, this, OnTestFeature, TestTerm, true, 2.0f);
+
+	if (TestScope)
+	{
+//         SceneCaptureScope = NewObject<USceneCaptureComponent2D>();
+        SceneCaptureScope->AddRelativeRotation(FRotator(0.f, 90.f, 0.f));
+        SceneCaptureScope->AttachToComponent(Scope, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::SnapToTarget, false), TEXT("SOCKET_Render"));
+        SceneCaptureScope->TextureTarget = TextureRender;
+        SceneCaptureScope->bCaptureOnMovement = true;
+        SceneCaptureScope->SetVisibility(true);
+        SceneCaptureScope->SetComponentTickEnabled(true);
+		SceneCaptureScope->FOVAngle = 6.5f;
+		SceneCaptureScope->HiddenActors.AddUnique(this);
+		SceneCaptureScope->HiddenActors.AddUnique(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+	}
+	else
+	{
+		Scope->DestroyComponent();
+
+	}
 }
 
 // Called every frame
@@ -122,7 +151,7 @@ void AWeaponBase::GetWeaponNameByWeaponType()
 
 bool AWeaponBase::FindWeaponDataInDataTable()
 {
-	static UDataTable* weaponRefDT;
+	static UDataTable* weaponRefDT = nullptr;
 	if(!weaponRefDT)
 		Helpers::GetAsset(&weaponRefDT, TEXT("DataTable'/Game/Datas/Weapon/WeaponRefDT.WeaponRefDT'"));
 
@@ -260,7 +289,13 @@ UWeaponPoseDA* AWeaponBase::GetPosesDA()
 
 FTransform AWeaponBase::GetAimOffset()
 {
-	return WeaponDA->AimOffset;
+	FTransform offset = WeaponDA->AimOffset;
+	if (Scope && WeaponDA->ScopeDA && TestScope)
+	{
+		offset += Scope->GetScopeOffset(WeaponDA->ScopeDA);
+	}
+
+	return offset;
 }
 
 int8 AWeaponBase::GetMaxAmmo()
@@ -382,6 +417,11 @@ IIItem* AWeaponBase::GetItem()
 	return this;
 }
 
+class UTexture2D* AWeaponBase::GetWeaponScopeImage()
+{
+	return WeaponDA->WeaponIronsightImage;
+}
+
 bool AWeaponBase::IsReloading()
 {
 	return bReloading;
@@ -394,7 +434,7 @@ UTexture2D* AWeaponBase::GetWeaponBodyImage()
 
 UTexture2D* AWeaponBase::GetWeaponMagazineImage()
 {
-    return WeaponDA->WeaponBodyImage;
+    return WeaponDA->WeaponMagazineImage;
 }
 
 FVector2D AWeaponBase::GetRecoilIntensity()

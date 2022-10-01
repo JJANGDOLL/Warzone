@@ -8,5 +8,6 @@
 void UWeaponTexture::SetWeaponBodyImage(IIWeapon* Weapon)
 {
     WeaponBody->SetBrushFromTexture(Weapon->GetWeaponBodyImage());
-    WeaponMagazine->SetBrushFromTexture(Weapon->GetWeaponBodyImage());
+    WeaponMagazine->SetBrushFromTexture(Weapon->GetWeaponMagazineImage());
+    WeaponScope->SetBrushFromTexture(Weapon->GetWeaponScopeImage());
 }

@@ -65,3 +65,4 @@ void UAnimInst_CharacterBase::NativeUpdateAnimation(float DeltaSeconds)
         AimOffset = WeaponItf->GetAimOffset();
     }
 }
+
