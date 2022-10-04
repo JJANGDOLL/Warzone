@@ -101,5 +101,5 @@ public:
     float BulletPower = 1.f;
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
-    class UDataTable* ScopeDA;
+    class UDataTable* ScopeDT;
 };

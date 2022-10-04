@@ -23,10 +23,14 @@ class UWeaponPoseDA;
 class USoundCue;
 class UTexture;
 class UScopeTemp;
+class UDataTable;
+class UScopeBase;
 
 DECLARE_DELEGATE(FWeaponFire)
+DECLARE_DELEGATE(FWeaponRecoil);
 DECLARE_DELEGATE(FWeaponFiretypeChange)
-DECLARE_DELEGATE(FWeaponReload);
+DECLARE_DELEGATE(FWeaponReload)
+// DECLARE_DELEGATE_OneParam(FWeaopnEquipped, UDataTable*)
 
 UCLASS(Abstract)
 class PROJECTX_API AWeaponBase : public AActor, public IIWeapon, public IIItem, public IIInteractable
@@ -57,20 +61,20 @@ protected:
 	USceneComponent* SocketScope;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "", meta = (AllowPrivateAccess = true))
-	UScopeTemp* Scope;
+	UScopeBase* Scope;
 
 protected:
 	UPROPERTY()
 	EWeaponTypes WeaponType;
 
     UPROPERTY(EditInstanceOnly, Category = "Projx | Weapon | Test", meta = (AllowPrivateAccess = true))
-	bool TestScope;
+    TSubclassOf<UScopeBase> ScopeType;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
-    UTextureRenderTarget2D* TextureRender;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
-    USceneCaptureComponent2D* SceneCaptureScope;
+//     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+//     UTextureRenderTarget2D* TextureRender;
+// 
+// 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+//     USceneCaptureComponent2D* SceneCaptureScope;
 
 
 protected:
@@ -95,12 +99,18 @@ protected:
     UAnimSequenceBase* GetEmptyPose();
 	void GetWeaponInfo();
     void GetSounds();
+	void GetScopeDT();
 
 	virtual void SetWeaponName();
 
 protected:
 	FName WeaponName;
 	class UWeaponDA* WeaponDA;
+	UDataTable* ScopeDT;
+
+public:
+	void Equipped();
+// 	FWeaopnEquipped OnEquipped;
 
 protected:
 	FTimerHandle TestTimerHandle;
@@ -197,6 +207,7 @@ public:
 	FWeaponFire OnWeaponFire;
 	FWeaponFiretypeChange OnWeaponFiretypeChanged;
 	FWeaponReload OnWeaponReload;
+	FWeaponRecoil OnWeaponRecoil;
 };
 
 

@@ -192,5 +192,7 @@ public:
 
 private:
 	void UpdateWeaponWidget();
+	
+	void WeaponRecoil();
 };
 

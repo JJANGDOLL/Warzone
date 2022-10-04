@@ -17,4 +17,13 @@ class PROJECTX_API UWeaponScopeDA : public UPrimaryDataAsset
 public:
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Scope", meta = (AllowPrivateAccess = true))
 	FTransform AimOffset;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Scope", meta = (AllowPrivateAccess = true))
+    float ScopeMultiplier;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Scope", meta = (AllowPrivateAccess = true))
+    class UTextureRenderTarget2D* TextureRender;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Scope", meta = (AllowPrivateAccess = true))
+    class UStaticMesh* ScopeMesh;
 };

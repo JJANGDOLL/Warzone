@@ -8,6 +8,9 @@
 #include "Datas/Weapons/WeaponScopeDA.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Kismet/GameplayStatics.h"
+#include "GameFramework/Character.h"
+// #include "GameFramework/Actor.h"
 
 UScopeTemp::UScopeTemp()
 {
@@ -19,12 +22,15 @@ UScopeTemp::UScopeTemp()
     ScopeType = SetScopeType();
     ScopeName = SetScopeName();
 
+    Helpers::GetAsset(&TextureRender, TEXT("TextureRenderTarget2D'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/_Common/Attachments/Textures/RT_ATT_Scope_01.RT_ATT_Scope_01'"));
 
 }
 
 void UScopeTemp::BeginPlay()
 {
     Super::BeginPlay();
+
+
 }
 
 EScopeType UScopeTemp::SetScopeType()
@@ -35,6 +41,23 @@ EScopeType UScopeTemp::SetScopeType()
 FName UScopeTemp::SetScopeName()
 {
     return TEXT("Scope-01");
+}
+
+void UScopeTemp::GetFOV(UDataTable* ScopeDT)
+{
+    FWeaponScopeDARef* findDA = ScopeDT->FindRow<FWeaponScopeDARef>(ScopeName, "");
+    if (!findDA)
+        return;
+
+    ScopeDA = Cast<UWeaponScopeDA>(findDA->DataRef);
+
+    if (!ScopeDA)
+        return;
+
+    if (!SceneCaptureScope)
+        return;
+
+    ScopeFOV = ScopeDA->ScopeMultiplier;
 }
 
 bool UScopeTemp::FindScopeDataInDataTable()
@@ -53,15 +76,32 @@ bool UScopeTemp::FindScopeDataInDataTable()
 
 FTransform UScopeTemp::GetScopeOffset(UDataTable* ScopeDT)
 {
+    return ScopeAimOffset;
+}
+
+void UScopeTemp::EnableScope(UDataTable* ScopeDT)
+{
     FWeaponScopeDARef* findDA = ScopeDT->FindRow<FWeaponScopeDARef>(ScopeName, "");
     if (!findDA)
-        return FTransform::FTransform();
+        return;
 
     ScopeDA = Cast<UWeaponScopeDA>(findDA->DataRef);
 
-    if (!ScopeDA)
-        return FTransform::FTransform();
+    if (!SceneCaptureScope && ScopeDA->TextureRender || true)
+    {
+        SceneCaptureScope = NewObject<USceneCaptureComponent2D>(this, TEXT("ScopeSceneCapture"));
+        SceneCaptureScope->RegisterComponent();
+        SceneCaptureScope->AddRelativeRotation(FRotator(0.f, 90.f, 0.f));
+        SceneCaptureScope->AttachToComponent(this, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::SnapToTarget, false), TEXT("SOCKET_Render"));
+        SceneCaptureScope->TextureTarget = ScopeDA->TextureRender;
+        SceneCaptureScope->bCaptureOnMovement = true;
+        SceneCaptureScope->SetComponentTickEnabled(true);
+        SceneCaptureScope->SetVisibility(true);
+        SceneCaptureScope->FOVAngle = ScopeDA->ScopeMultiplier;
+        SceneCaptureScope->HiddenActors.AddUnique(GetOwner());
+        SceneCaptureScope->HiddenActors.AddUnique(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
+    }
 
-    return ScopeDA->AimOffset;
+    ScopeAimOffset = ScopeDA->AimOffset;
 }
 

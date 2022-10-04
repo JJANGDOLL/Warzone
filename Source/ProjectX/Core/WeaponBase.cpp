@@ -20,6 +20,8 @@
 #include "Weapons/Attachments/ScopeTemp.h"
 #include "Components/SceneCaptureComponent2D.h"
 #include "Engine/TextureRenderTarget2D.h"
+#include "Weapons/Attachments/ScopeBase.h"
+#include "Weapons/Attachments/Scope_01.h"
 
 #define LOCTEXT_NAMESPACE "MyNamespace"
 
@@ -35,8 +37,8 @@ AWeaponBase::AWeaponBase()
     Helpers::CreateComponent(this, &SocketIronSight, TEXT("Socket_IronSight"), Weapon, TEXT("SOCKET_Default"));
     Helpers::CreateComponent(this, &IronSight, TEXT("Ironsight"), SocketIronSight);
 	Helpers::CreateComponent(this, &SocketScope, TEXT("Socket_Scope"), Weapon, TEXT("SOCKET_Scope"));
-	Helpers::CreateComponent(this, &Scope, TEXT("Scope"), SocketScope);
-	Helpers::CreateComponent(this, &SceneCaptureScope, TEXT("SceneCapture"), Scope, TEXT("SOCKET_Render"));
+// 	Helpers::CreateComponent(this, &Scope, TEXT("Scope"), SocketScope);
+// 	Helpers::CreateComponent(this, &SceneCaptureScope, TEXT("SceneCapture"), Scope, TEXT("SOCKET_Render"));
 
 	TestMethods.Add(EWeaponFeature::None, &AWeaponBase::DoNothing);
 	TestMethods.Add(EWeaponFeature::Reload, &AWeaponBase::Reload);
@@ -50,7 +52,7 @@ AWeaponBase::AWeaponBase()
 	Weapon->SetGenerateOverlapEvents(true);
 	Weapon->SetCollisionProfileName(TEXT("InteractObject"));
 
-    Helpers::GetAsset(&TextureRender, TEXT("TextureRenderTarget2D'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/_Common/Attachments/Textures/RT_ATT_Scope_01.RT_ATT_Scope_01'"));
+//     Helpers::GetAsset(&TextureRender, TEXT("TextureRenderTarget2D'/Game/InfimaGames/AnimatedLowPolyWeapons/Art/Weapons/_Common/Attachments/Textures/RT_ATT_Scope_01.RT_ATT_Scope_01'"));
 }
 
 // Called when the game starts or when spawned
@@ -59,30 +61,20 @@ void AWeaponBase::BeginPlay()
 	Super::BeginPlay();
 
 	Logger::Log(static_cast<int32>(TestFeature));
-	
-    OnTestFeature = TestMethods[TestFeature];
 
-	Logger::Log(Scope);
+	OnTestFeature = TestMethods[TestFeature];
+
+	// 	Logger::Log(Scope);
 
 	GetWorldTimerManager().SetTimer(TestTimerHandle, this, OnTestFeature, TestTerm, true, 2.0f);
 
-	if (TestScope)
-	{
-//         SceneCaptureScope = NewObject<USceneCaptureComponent2D>();
-        SceneCaptureScope->AddRelativeRotation(FRotator(0.f, 90.f, 0.f));
-        SceneCaptureScope->AttachToComponent(Scope, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::SnapToTarget, false), TEXT("SOCKET_Render"));
-        SceneCaptureScope->TextureTarget = TextureRender;
-        SceneCaptureScope->bCaptureOnMovement = true;
-        SceneCaptureScope->SetVisibility(true);
-        SceneCaptureScope->SetComponentTickEnabled(true);
-		SceneCaptureScope->FOVAngle = 6.5f;
-		SceneCaptureScope->HiddenActors.AddUnique(this);
-		SceneCaptureScope->HiddenActors.AddUnique(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
-	}
-	else
-	{
-		Scope->DestroyComponent();
-
+	if (ScopeType)
+	{	
+		UScopeBase* scope = NewObject<UScopeBase>(this, ScopeType, TEXT("Scope"));
+		Scope = scope;
+		Scope->RegisterComponent();
+		Scope->AttachToComponent(SocketScope, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Scope"));
+		Scope->EnableScope(WeaponDA->ScopeDT);
 	}
 }
 
@@ -90,6 +82,8 @@ void AWeaponBase::BeginPlay()
 void AWeaponBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+
 
     OnTestFeature = TestMethods[TestFeature];
 
@@ -117,6 +111,7 @@ void AWeaponBase::MakeWeapon()
 	GetEmptyPose();
 	GetWeaponInfo();
 	GetSounds();
+	GetScopeDT();
 }
 
 void AWeaponBase::GetWeaponNameByWeaponType()
@@ -212,9 +207,20 @@ void AWeaponBase::GetSounds()
 	ReloadEmptySound = WeaponDA->ReloadEmptySound;
 }
 
+void AWeaponBase::GetScopeDT()
+{
+	ScopeDT = WeaponDA->ScopeDT;
+}
+
 void AWeaponBase::SetWeaponName()
 {
 
+}
+
+void AWeaponBase::Equipped()
+{
+	if(Scope)
+		Scope->EnableScope(ScopeDT);
 }
 
 void AWeaponBase::EjectCasing()
@@ -248,9 +254,9 @@ void AWeaponBase::SpawnBullet()
 		UGameplayStatics::DeprojectScreenToWorld(UGameplayStatics::GetPlayerController(GetWorld(), 0), FVector2D(sizeX / 2, sizeY / 2), location, direction);
 
 		bulletTransform.SetLocation(location);
-		bulletTransform.SetRotation(FQuat(direction.Rotation()));
+		bulletTransform.SetRotation(direction.ToOrientationQuat());
 
-// 		DrawDebugDirectionalArrow(GetWorld(), location, location + direction * 100.f, 10, FColor::Red, false, 20.f, 0.f, 1.f);
+// 		DrawDebugDirectionalArrow(GetWorld(), location, location + direction * 3000.f, 10, FColor::Red, false, 20.f, 0.f, 1.f);
 	}
 
 	bulletTransform.SetScale3D(GetActorScale());
@@ -290,9 +296,9 @@ UWeaponPoseDA* AWeaponBase::GetPosesDA()
 FTransform AWeaponBase::GetAimOffset()
 {
 	FTransform offset = WeaponDA->AimOffset;
-	if (Scope && WeaponDA->ScopeDA && TestScope)
+	if (Scope && WeaponDA->ScopeDT)
 	{
-		offset += Scope->GetScopeOffset(WeaponDA->ScopeDA);
+		offset += Scope->GetScopeOffset();
 	}
 
 	return offset;
@@ -358,6 +364,7 @@ void AWeaponBase::Fire()
 	CurrentAmmo--;
 
 	OnWeaponFire.ExecuteIfBound();
+	OnWeaponRecoil.ExecuteIfBound();
 }
 
 USkeletalMeshComponent* AWeaponBase::GetWeaponBodyMesh()

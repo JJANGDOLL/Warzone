@@ -19,8 +19,6 @@ class PROJECTX_API UWeaponAttachment : public UStaticMeshComponent, public IIWea
 public:
 	UWeaponAttachment();
 
-
-
 public:
 	class UTexture2D* GetAttachmentImage() override;
 

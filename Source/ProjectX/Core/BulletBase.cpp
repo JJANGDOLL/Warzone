@@ -93,7 +93,7 @@ void ABulletBase::HitCheck_Implementation(UPrimitiveComponent* OverlappedComp, A
 	{
 		Logger::Log(SweepResult.GetComponent());
 		Logger::Log(SweepResult.ImpactPoint);
-		FVector offset = SweepResult.ImpactPoint - SweepResult.GetComponent()->GetComponentLocation();
+		FVector offset = SweepResult.ImpactPoint - SweepResult.GetComponent()->GetComponentLocation() - FVector(0.f, -1.f, -1.f);
 		Logger::Log(offset);
 
 		UStaticMeshComponent* sm_meshcomp = Cast<UStaticMeshComponent>(SweepResult.GetComponent());

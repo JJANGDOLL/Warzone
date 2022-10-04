@@ -660,30 +660,6 @@ void ACharacterBase::FireCore(UAnimMontage* Montage)
         return;
     }
 
-    FVector2D recoilIntensity = GetEquippedWeapon()->GetRecoilIntensity();
-
-    float recoilUp = FMath::FRandRange(recoilIntensity.X * 0.1f, recoilIntensity.X);
-    float recoilRight = FMath::FRandRange(recoilIntensity.Y * 0.1f, recoilIntensity.Y);
-
-    if (bAiming)
-    {
-        recoilUp *= 0.8f;
-        recoilRight *= 0.8f;
-    }
-    else
-    {
-        recoilUp *= 1.2f;
-        recoilRight *= 1.2f;
-    }
-
-    if (bCrouching)
-    {
-        recoilUp *= 0.6;
-        recoilRight *= 0.6f;
-    }
-
-    GetController()->SetControlRotation(FRotator(recoilUp, recoilRight, 0.f) +  GetControlRotation());
-
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(Montage);
     GetEquippedWeapon()->Fire();
 
@@ -924,11 +900,12 @@ void ACharacterBase::NewWeapon()
     RET_IS_UNARMED;
 
     GetEquippedWeapon()->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
+    GetEquippedWeapon()->Equipped();
 
     Unholstering();
 
-
     GetEquippedWeapon()->OnWeaponFire.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
+    GetEquippedWeapon()->OnWeaponRecoil.BindUObject(this, &ACharacterBase::WeaponRecoil);
     GetEquippedWeapon()->OnWeaponFiretypeChanged.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
     GetEquippedWeapon()->OnWeaponReload.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
 }
@@ -961,4 +938,31 @@ void ACharacterBase::UpdateWeaponWidget()
         PlayerHUD->GetWeaponWidget()->SetFireType(GetEquippedWeapon());
         PlayerHUD->GetWeaponImage()->SetWeaponBodyImage(GetEquippedWeapon());
     }
+}
+
+void ACharacterBase::WeaponRecoil()
+{
+    FVector2D recoilIntensity = GetEquippedWeapon()->GetRecoilIntensity();
+
+    float recoilUp = FMath::FRandRange(recoilIntensity.X * 0.1f, recoilIntensity.X);
+    float recoilRight = FMath::FRandRange(recoilIntensity.Y * 0.1f, recoilIntensity.Y);
+
+    if (bAiming)
+    {
+        recoilUp *= 0.8f;
+        recoilRight *= 0.8f;
+    }
+    else
+    {
+        recoilUp *= 1.2f;
+        recoilRight *= 1.2f;
+    }
+
+    if (bCrouching)
+    {
+        recoilUp *= 0.6;
+        recoilRight *= 0.6f;
+    }
+
+//     GetController()->SetControlRotation(FRotator(recoilUp, recoilRight, 0.f) + GetControlRotation());
 }

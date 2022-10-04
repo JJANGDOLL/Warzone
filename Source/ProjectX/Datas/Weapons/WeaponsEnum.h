@@ -64,5 +64,12 @@ enum class EScopeType : uint8
 {
     None = 0,
     SCOPE_01,
-    Count UMETA(Hidden)
+    SCOPE_02,
+    SCOPE_03,
+    SCOPE_04,
+    SCOPE_05,
+    SCOPE_06,
+    SCOPE_07,
+    SCOPE_08,
+    Count UMETA(Hidden),
 };

@@ -30,15 +30,24 @@ public:
 protected:
 	EScopeType SetScopeType();
     FName SetScopeName();
+
+	void GetFOV(UDataTable* ScopeDT);
 	bool FindScopeDataInDataTable();
+
 
 public:
 	FTransform GetScopeOffset(UDataTable* ScopeDT);
+	void EnableScope(UDataTable* ScopeDT);
 
 private:
 	EScopeType ScopeType;
 	FName ScopeName;
 	UWeaponScopeDA* ScopeDA;
+	FTransform ScopeAimOffset;
+	float ScopeFOV;
 
+	USceneCaptureComponent2D* SceneCaptureScope;
+    UTextureRenderTarget2D* TextureRender;
 
+	
 };
