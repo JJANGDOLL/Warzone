@@ -964,5 +964,5 @@ void ACharacterBase::WeaponRecoil()
         recoilRight *= 0.6f;
     }
 
-//     GetController()->SetControlRotation(FRotator(recoilUp, recoilRight, 0.f) + GetControlRotation());
+    GetController()->SetControlRotation(FRotator(recoilUp, recoilRight, 0.f) + GetControlRotation());
 }
