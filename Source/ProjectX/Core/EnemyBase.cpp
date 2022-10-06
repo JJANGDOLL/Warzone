@@ -12,6 +12,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "Math/UnrealMathUtility.h"
 #include "Objects/DamageText.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "BehaviorTree/BehaviorTree.h"
+#include "EnemyController.h"
 
 // Sets default values
 AEnemyBase::AEnemyBase()
@@ -22,7 +25,7 @@ AEnemyBase::AEnemyBase()
 	Helpers::CreateComponent(this, &StatusWidgetComp, TEXT("StatusWidget"), GetCapsuleComponent());
 
 	USkeletalMesh* skelMesh;
-	Helpers::GetAsset(&skelMesh, TEXT("SkeletalMesh'/Game/InfimaGames/Utilities/Art/Characters/Mannequin/SK_Mannequin.SK_Mannequin'"));
+	Helpers::GetAsset(&skelMesh, TEXT("SkeletalMesh'/Game/BSP_ZombieAnims/EpicAssets/Mannequin/Character/Mesh/SK_Mannequin.SK_Mannequin'"));
 
 	GetMesh()->SetSkeletalMesh(skelMesh);
 	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -88.f));
@@ -35,17 +38,36 @@ AEnemyBase::AEnemyBase()
 
 	StatusWidgetComp->SetWidgetClass(statusWidgetClass);
 	StatusWidgetComp->AddRelativeLocation(FVector(0.f, 0.f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() + 15.f));
-	StatusWidgetComp->SetWidgetSpace(EWidgetSpace::World);
+	StatusWidgetComp->SetWidgetSpace(EWidgetSpace::World);    
 	StatusWidgetComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 // 	StatusWidget = Cast<UEnemyStatus>(StatusWidgetComp->GetWidget());
 
 	GetMesh()->SetGenerateOverlapEvents(true);
 	GetMesh()->SetCollisionProfileName(TEXT("Body"));
+
+	// AnimBlueprint'/Game/ProjectX/Characters/ABP_EnemyBase.ABP_EnemyBase'
+    TSubclassOf<UAnimInstance> enemyAnimInst;
+    Helpers::GetClass(&enemyAnimInst, TEXT("AnimBlueprint'/Game/ProjectX/Characters/ABP_EnemyBase.ABP_EnemyBase_C'"));
+    GetMesh()->SetAnimClass(enemyAnimInst);
+
+	GetCharacterMovement()->MaxWalkSpeed = 0.f;
+	
+	Helpers::GetAsset(&EnemyBehaviorTree, TEXT("BehaviorTree'/Game/ProjectX/Enemy/BT_Enemy.BT_Enemy'"));
+
+	AIControllerClass = AEnemyController::StaticClass();
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 }
 
 void AEnemyBase::Hitted(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void AEnemyBase::EnableRun()
+{
+	PrintLine();
+
+	GetCharacterMovement()->MaxWalkSpeed = 250.f;
 }
 
 float AEnemyBase::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
@@ -63,9 +85,9 @@ void AEnemyBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
-    AAIController* controller = GetWorld()->SpawnActor<AAIController>(AAIController::StaticClass(), GetActorTransform());
+//     AEnemyController* controller = GetWorld()->SpawnActor<AEnemyController>(AEnemyController::StaticClass(), GetActorTransform());
 
-    PossessedBy(controller);
+//     PossessedBy(controller);
 
     StatusWidget = Cast<UEnemyStatus>(StatusWidgetComp->GetWidget());
 
@@ -94,6 +116,18 @@ void AEnemyBase::Tick(float DeltaTime)
             StatusWidgetComp->SetVisibility(false);
 		}
 	}
+
+// 	auto curPos = GetActorLocation();
+// 	FVector playerPos = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+// 
+// 	FVector direction = playerPos - curPos;
+// 	direction.Normalize();
+// 	SetActorLocation(curPos + direction);
+
+	if (CurrentHealth <= 0)
+	{
+		Destroy();
+	}
 }
 
 // Called to bind functionality to input
@@ -102,4 +136,3 @@ void AEnemyBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 }
-

@@ -24,6 +24,9 @@ public:
 
 	UEnemyStatus* StatusWidget;
 
+	UPROPERTY(EditAnywhere, Category = "Projx | Behavior")
+	class UBehaviorTree* EnemyBehaviorTree;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -31,6 +34,9 @@ protected:
 public:
 	float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 	void Hitted(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	UFUNCTION(BlueprintCallable)
+	void EnableRun();
 
 public:	
 	// Called every frame
@@ -44,4 +50,8 @@ protected:
 	float CurrentHealth = 200.f;
 
 	ACharacter* PlayerCharacter;
+
+// public:
+// 	UFUNCTION(BlueprintCallable)
+// 	float GetVelocity();
 };
