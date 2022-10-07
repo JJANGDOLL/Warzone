@@ -326,10 +326,10 @@ float AWeaponBase::GetFireInterval()
 
 void AWeaponBase::DoNothing()
 {
-	Helpers::DrawGizmo(Weapon);
-	Helpers::DrawGizmo(GetWorld(), Weapon->GetSocketTransform(TEXT("SOCKET_Muzzle"), RTS_World));
-    Helpers::DrawGizmo(GetWorld(), Weapon->GetSocketTransform(TEXT("SOCKET_Eject"), RTS_World));
-    Helpers::DrawGizmo(GetWorld(), Weapon->GetSocketTransform(TEXT("SOCKET_Bullet"), RTS_World));
+// 	Helpers::DrawGizmo(Weapon);
+// 	Helpers::DrawGizmo(GetWorld(), Weapon->GetSocketTransform(TEXT("SOCKET_Muzzle"), RTS_World));
+//     Helpers::DrawGizmo(GetWorld(), Weapon->GetSocketTransform(TEXT("SOCKET_Eject"), RTS_World));
+//     Helpers::DrawGizmo(GetWorld(), Weapon->GetSocketTransform(TEXT("SOCKET_Bullet"), RTS_World));
 }
 
 void AWeaponBase::Reload()

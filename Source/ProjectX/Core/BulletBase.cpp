@@ -51,7 +51,7 @@ void ABulletBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-// 	Helpers::DrawGizmo(CollisionBox);
+	Helpers::DrawGizmo(CollisionBox);
 }
 
 void ABulletBase::OnLaunch(bool bCinematic, FVector Velocity)
