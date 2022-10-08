@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Crosshair.h"
 #include "MainGameInterface.generated.h"
 
 class UWeaponWidget;
@@ -30,4 +31,10 @@ public:
 	UInteractTextWidget* InteractText;
 
 	UInteractTextWidget* GetInteractText();
+
+	UPROPERTY(EditAnywhere, meta = (BindWidget))
+	UCrosshair* CrosshairWidget;
+
+	UCrosshair* GetCrosshairWidget();
+	void SetCrosshairClass(TSubclassOf<UCrosshair> CrosshairClass);
 };

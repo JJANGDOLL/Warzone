@@ -22,6 +22,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "Weapons/Attachments/ScopeBase.h"
 #include "Weapons/Attachments/Scope_01.h"
+#include "Widget/Crosshair.h"
 
 #define LOCTEXT_NAMESPACE "MyNamespace"
 
@@ -427,6 +428,11 @@ IIItem* AWeaponBase::GetItem()
 class UTexture2D* AWeaponBase::GetWeaponScopeImage()
 {
 	return WeaponDA->WeaponIronsightImage;
+}
+
+TSubclassOf<UCrosshair> AWeaponBase::GetCrosshairClass()
+{
+	return WeaponDA->CrosshairClass;
 }
 
 bool AWeaponBase::IsReloading()

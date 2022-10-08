@@ -53,4 +53,6 @@ public:
     virtual class UTexture2D* GetWeaponScopeImage() = 0;
 
 	virtual EAmmoType GetWeaponAmmoType() = 0;
+
+	virtual TSubclassOf<class UCrosshair> GetCrosshairClass() = 0;
 };

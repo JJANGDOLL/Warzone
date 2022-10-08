@@ -194,5 +194,14 @@ private:
 	void UpdateWeaponWidget();
 	
 	void WeaponRecoil();
+
+private:
+	void Pause();
+
+	TSubclassOf<UUserWidget> PauseWidgetClass;
+    UUserWidget* PauseWidget;
+    bool bShowPause;
+
+	TSubclassOf<class UCrosshair> CrosshairClass;
 };
 

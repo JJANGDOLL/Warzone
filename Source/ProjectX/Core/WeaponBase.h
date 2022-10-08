@@ -25,6 +25,7 @@ class UTexture;
 class UScopeTemp;
 class UDataTable;
 class UScopeBase;
+class UCrosshair;
 
 DECLARE_DELEGATE(FWeaponFire)
 DECLARE_DELEGATE(FWeaponRecoil);
@@ -208,6 +209,9 @@ public:
 	FWeaponFiretypeChange OnWeaponFiretypeChanged;
 	FWeaponReload OnWeaponReload;
 	FWeaponRecoil OnWeaponRecoil;
+
+public:
+	TSubclassOf<UCrosshair> GetCrosshairClass() override;
 };
 
 

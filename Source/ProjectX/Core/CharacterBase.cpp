@@ -29,6 +29,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Interfaces/IInteractable.h"
 #include "Widget/InteractTextWidget.h"
+#include "Widget/Crosshair.h"
 
 #define SET_MAX_WALK_SPEED(p) GetCharacterMovement()->MaxWalkSpeed = p;
 #define RET_IS_UNARMED if(!GetEquippedWeapon()) return;
@@ -89,6 +90,12 @@ ACharacterBase::ACharacterBase()
 
     PlayerHUD = nullptr;
     Helpers::GetClass<UMainGameInterface>(&PlayerHUDClass, TEXT("WidgetBlueprint'/Game/ProjectX/Widgets/Main_Game_Interface.Main_Game_Interface_C'"));
+
+    PauseWidgetClass = nullptr;
+    Helpers::GetClass<UUserWidget>(&PauseWidgetClass, TEXT("WidgetBlueprint'/Game/ProjectX/Widgets/WBP_Pause.WBP_Pause_C'"));
+
+    CrosshairClass = nullptr;
+    Helpers::GetClass<UCrosshair>(&CrosshairClass, TEXT("WidgetBlueprint'/Game/ProjectX/Widgets/Crosshair/WBP_CrosshairDefault.WBP_CrosshairDefault_C'"));
 }
 
 void ACharacterBase::OnConstruction(const FTransform& Transform)
@@ -146,6 +153,7 @@ void ACharacterBase::BeginPlay()
         PlayerHUD = CreateWidget<UMainGameInterface>(FPC, PlayerHUDClass);
         verifyf(PlayerHUD, L"Invalid HUD");
         PlayerHUD->AddToPlayerScreen();
+        PlayerHUD->SetCrosshairClass(CrosshairClass);
     }
 
     if (IS_UNARMED)
@@ -153,6 +161,7 @@ void ACharacterBase::BeginPlay()
         bHolster = true;
         PlayerHUD->GetWeaponImage()->SetVisibility(ESlateVisibility::Hidden);
         PlayerHUD->GetWeaponWidget()->SetVisibility(ESlateVisibility::Hidden);
+        SkeletalMeshArms->SetVisibility(false);
     }
 }
 
@@ -226,6 +235,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
     FInputActionKeyMapping interactKey("Interact", EKeys::E, 0, 0, 0, 0);
     FInputActionKeyMapping dropKey("Drop", EKeys::H, 0, 0, 0, 0);
+    FInputActionKeyMapping pauseKey("Pause", EKeys::P, 0, 0, 0, 0);
 
     PlayerInputComponent->BindAxis("Forward", this, &ACharacterBase::MoveForward);
     PlayerInputComponent->BindAxis("Back", this, &ACharacterBase::MoveForward);
@@ -255,6 +265,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAction("Item3Key", IE_Pressed, this, &ACharacterBase::GetItemThree);
     PlayerInputComponent->BindAction("Interact", IE_Pressed, this, &ACharacterBase::Interact);
     PlayerInputComponent->BindAction("Drop", IE_Pressed, this, &ACharacterBase::DropItem);
+    PlayerInputComponent->BindAction("Pause", IE_Pressed, this, &ACharacterBase::Pause).bExecuteWhenPaused = true;
 
 
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddAxisMapping(forwardKey);
@@ -281,6 +292,7 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(interactKey);
     GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(dropKey);
+    GetWorld()->GetFirstPlayerController()->PlayerInput->AddActionMapping(pauseKey);
 }
 
 void ACharacterBase::MoveForward(float AxisValue)
@@ -599,6 +611,8 @@ void ACharacterBase::Unholstering()
     newSegment.LoopingCount = 1;
     slotAim.AnimTrack.AnimSegments.Add(newSegment);
 
+    SkeletalMeshArms->SetVisibility(true);
+
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
 
     FOnMontageEnded BlendOutDele;
@@ -737,6 +751,8 @@ void ACharacterBase::StartAiming()
 
     bAiming = true;
 
+    PlayerHUD->GetCrosshairWidget()->SetVisibility(ESlateVisibility::Hidden);
+
     SET_MAX_WALK_SPEED(250.f);
 }
 
@@ -746,6 +762,8 @@ void ACharacterBase::StopAiming()
         return;
 
     bAiming = false;
+
+    PlayerHUD->GetCrosshairWidget()->SetVisibility(ESlateVisibility::Visible);
 
     SET_MAX_WALK_SPEED(300.f);
 }
@@ -908,6 +926,8 @@ void ACharacterBase::NewWeapon()
     GetEquippedWeapon()->OnWeaponRecoil.BindUObject(this, &ACharacterBase::WeaponRecoil);
     GetEquippedWeapon()->OnWeaponFiretypeChanged.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
     GetEquippedWeapon()->OnWeaponReload.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
+
+//     PlayerHUD->SetCrosshairClass(GetEquippedWeapon()->GetCrosshairClass());
 }
 
 UAC_Inventory* ACharacterBase::GetInventory()
@@ -965,4 +985,14 @@ void ACharacterBase::WeaponRecoil()
     }
 
     GetController()->SetControlRotation(FRotator(recoilUp, recoilRight, 0.f) + GetControlRotation());
+}
+
+void ACharacterBase::Pause()
+{
+    if (!PauseWidget)
+    {
+        PauseWidget = CreateWidget<UUserWidget>(GetWorld(), PauseWidgetClass, TEXT("PauseWidget"));
+    }
+
+    PauseWidget->AddToViewport();
 }
