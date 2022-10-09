@@ -354,6 +354,9 @@ void ACharacterBase::Fire()
 {
     RET_IS_UNARMED;
 
+    if (!bCanFire)
+        return;
+
     if (bPlayingMontageReloading)
         return;
 
@@ -415,6 +418,7 @@ void ACharacterBase::Fire()
 
 void ACharacterBase::Reload()
 {
+
     if (bPlayingMontageReloading)
         return;
 
@@ -430,12 +434,17 @@ void ACharacterBase::Reload()
     bPlayingMontageReloading = true;
     StopRunning();
 
-    if (GetEquippedWeapon()->GetCurAmmo() == 0)
+    if (GetEquippedWeapon()->IsBoltAction())
+    {
+        ReloadBoltActionAmmo();
+        return;
+    }
+
+    if (GetEquippedWeapon()->GetCurAmmo() == 0 && GetEquippedWeapon()->GetPosesDA()->ReloadEmpty)
     {
         ReloadEmpty();
         return;
     }
-
 
     UWeaponPoseDA* poses = GetEquippedWeapon()->GetPosesDA();
 
@@ -674,7 +683,14 @@ void ACharacterBase::FireCore(UAnimMontage* Montage)
         return;
     }
 
+
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(Montage);
+    if (GetEquippedWeapon()->IsBoltAction())
+        bCanFire = false;
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &ACharacterBase::OnFireBlendOut);
+    SkeletalMeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, Montage);
+
     GetEquippedWeapon()->Fire();
 
     BrustFireCount++;
@@ -694,8 +710,6 @@ bool ACharacterBase::IsWeaponEquipped()
 
 void ACharacterBase::UpdateWidget()
 {
-
-
     if (InteractTarget)
     {
         PlayerHUD->GetInteractText()->SetInteractText(InteractTarget->Description());
@@ -723,6 +737,21 @@ void ACharacterBase::OnUnholsterBlendOut(UAnimMontage* AnimMontage, bool bInterr
     PrintLine();
 
     bPlayingMontageUnholstering = false;
+}
+
+void ACharacterBase::OnFireBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+    PrintLine();
+
+    if (!GetEquippedWeapon()->IsBoltAction())
+        return;
+
+    BoltActionReload();
+}
+
+void ACharacterBase::OnBoltActionReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+    bCanFire = true;
 }
 
 void ACharacterBase::StartCrouch()
@@ -995,4 +1024,146 @@ void ACharacterBase::Pause()
     }
 
     PauseWidget->AddToViewport();
+}
+
+void ACharacterBase::BoltActionReload()
+{
+    if (bPlayingMontageReloading)
+        return;
+
+    if (!GetEquippedWeapon())
+        return;
+
+    if (bPlayingMontageUnholstering)
+        return;
+
+    if (Inventory->GetRemainAmmo(GetEquippedWeapon()->GetWeaponAmmoType()) <= 0)
+        return;
+
+    UWeaponPoseDA* poses = GetEquippedWeapon()->GetPosesDA();
+
+    UAnimMontage* montage = UAnimMontage::CreateSlotAnimationAsDynamicMontage(poses->Reload, TEXT("Overlay Standing"), 0.f, 0.f, 1.f);
+
+    FSlotAnimationTrack& slotAim = montage->AddSlot(TEXT("Overlay Aiming"));
+
+    FAnimSegment newSegment;
+    if (poses->AimReload)
+    {
+        newSegment.AnimReference = poses->AimReload;
+        newSegment.AnimEndTime = poses->AimReload->SequenceLength;
+    }
+    else
+    {
+        StopAiming();
+        newSegment.AnimReference = poses->Reload;
+        newSegment.AnimEndTime = poses->Reload->SequenceLength;
+    }
+    newSegment.AnimStartTime = 0.f;
+    newSegment.AnimPlayRate = 1.f;
+    newSegment.StartPos = 0.f;
+    newSegment.LoopingCount = 1;
+    slotAim.AnimTrack.AnimSegments.Add(newSegment);
+
+    SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &ACharacterBase::OnBoltActionReloadBlendOut);
+    SkeletalMeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, montage);
+
+    GetEquippedWeapon()->BoltActionReload();
+}
+
+void ACharacterBase::ReloadBoltActionAmmo()
+{
+    if (GetEquippedWeapon()->GetCurAmmo() == GetEquippedWeapon()->GetMaxAmmo())
+    {
+        bPlayingMontageReloading = false;
+        return;
+    }
+
+    UWeaponPoseDA* poses = GetEquippedWeapon()->GetPosesDA();
+
+    UAnimMontage* montage = UAnimMontage::CreateSlotAnimationAsDynamicMontage(poses->BoltActionOpenPose, TEXT("Overlay Standing"), 0.f, 0.f, 1.f);
+
+    FSlotAnimationTrack& slotAim = montage->AddSlot(TEXT("Overlay Aiming"));
+
+    FAnimSegment newSegment;
+
+    StopAiming();
+    newSegment.AnimReference = poses->BoltActionOpenPose;
+    newSegment.AnimEndTime = poses->BoltActionOpenPose->SequenceLength;
+    newSegment.AnimStartTime = 0.f;
+    newSegment.AnimPlayRate = 1.f;
+    newSegment.StartPos = 0.f;
+    newSegment.LoopingCount = 1;
+    slotAim.AnimTrack.AnimSegments.Add(newSegment);
+
+    SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
+
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &ACharacterBase::OnBoltActionOpenBlendOut);
+    SkeletalMeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, montage);
+
+    GetEquippedWeapon()->Reload();
+}
+
+void ACharacterBase::OnBoltActionOpenBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+    UWeaponPoseDA* poses = GetEquippedWeapon()->GetPosesDA();
+
+    UAnimMontage* montage = UAnimMontage::CreateSlotAnimationAsDynamicMontage(poses->BoltActionInsertPose, TEXT("Overlay Standing"), 0.f, 0.f, 1.f);
+
+    FSlotAnimationTrack& slotAim = montage->AddSlot(TEXT("Overlay Aiming"));
+
+    FAnimSegment newSegment;
+
+    StopAiming();
+    newSegment.AnimReference = poses->BoltActionInsertPose;
+    newSegment.AnimEndTime = poses->BoltActionInsertPose->SequenceLength;
+    newSegment.AnimStartTime = 0.f;
+    newSegment.AnimPlayRate = 1.f;
+    newSegment.StartPos = 0.f;
+    newSegment.LoopingCount = 1;
+    slotAim.AnimTrack.AnimSegments.Add(newSegment);
+
+    SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
+
+    if (GetEquippedWeapon()->GetCurAmmo() != GetEquippedWeapon()->GetMaxAmmo())
+    {
+        FOnMontageEnded BlendOutDele;
+        BlendOutDele.BindUObject(this, &ACharacterBase::OnBoltActionOpenBlendOut);
+        SkeletalMeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, montage);
+
+        GetEquippedWeapon()->InsertBoltActionAmmo();
+    }
+    else
+    {
+        UWeaponPoseDA* poses2 = GetEquippedWeapon()->GetPosesDA();
+
+        UAnimMontage* montage2 = UAnimMontage::CreateSlotAnimationAsDynamicMontage(poses->BoltActionClosePose, TEXT("Overlay Standing"), 0.f, 0.f, 1.f);
+
+        FSlotAnimationTrack& slotAim2 = montage->AddSlot(TEXT("Overlay Aiming"));
+
+        FAnimSegment newSegment2;
+
+        StopAiming();
+        newSegment2.AnimReference = poses2->BoltActionClosePose;
+        newSegment2.AnimEndTime = poses2->BoltActionClosePose->SequenceLength;
+        newSegment2.AnimStartTime = 0.f;
+        newSegment2.AnimPlayRate = 1.f;
+        newSegment2.StartPos = 0.f;
+        newSegment2.LoopingCount = 1;
+        slotAim2.AnimTrack.AnimSegments.Add(newSegment2);
+
+        SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage2);
+
+        FOnMontageEnded BlendOutDele2;
+        BlendOutDele2.BindUObject(this, &ACharacterBase::OnBoltActionCloseBlendOut);
+        SkeletalMeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele2, montage2);
+    }
+
+}
+
+void ACharacterBase::OnBoltActionCloseBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+    bPlayingMontageReloading = false;
 }

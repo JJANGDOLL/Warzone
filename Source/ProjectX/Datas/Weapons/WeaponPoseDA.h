@@ -53,4 +53,13 @@ public:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
     UAnimSequenceBase* Unholster;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    UAnimSequenceBase* BoltActionOpenPose;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    UAnimSequenceBase* BoltActionInsertPose;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
+    UAnimSequenceBase* BoltActionClosePose;
 };

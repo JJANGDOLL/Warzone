@@ -14,3 +14,8 @@ void ASniper_01::SetWeaponName()
 {
     WeaponName = TEXT("Sniper-01");
 }
+
+EAmmoType ASniper_01::GetWeaponAmmoType()
+{
+    return EAmmoType::Big;
+}

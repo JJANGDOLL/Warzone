@@ -105,4 +105,16 @@ public:
 
     UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Weapon", meta = (AllowPrivateAccess = true))
     TSubclassOf<class UCrosshair> CrosshairClass;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Animation", meta = (AllowPrivateAccess = true))
+    class UAnimMontage* WeaponAmmoOpen;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Animation", meta = (AllowPrivateAccess = true))
+    class UAnimMontage* WeaponAmmoInsert;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Animation", meta = (AllowPrivateAccess = true))
+    class UAnimMontage* WeaponAmmoClose;
+
+    UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Projx | Animation", meta = (AllowPrivateAccess = true))
+    class UAnimMontage* ReloadBoltaction;
 };

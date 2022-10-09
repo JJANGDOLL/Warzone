@@ -10,6 +10,7 @@
 #include "Utilities/Global.h"
 #include "CharacterBase.h"
 #include "Interfaces/ISubWeapon.h"
+#include "Weapons/Sniper_01.h"
 
 // Sets default values for this component's properties
 UAC_Inventory::UAC_Inventory()
@@ -29,7 +30,7 @@ void UAC_Inventory::BeginPlay()
 
 	Inventory.Init(nullptr, 3);
 
-// 	AddWeapon(AAssault_Rifle_01::StaticClass(), 0);
+// 	AddWeapon(ASniper_01::StaticClass(), 0);
 //     AddWeapon(AAssault_Rifle_02::StaticClass(), 1);
 //     AddWeapon(AHandgun_01::StaticClass(), 2);
 // 	CurrentItem = &(Inventory[0]);

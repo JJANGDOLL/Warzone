@@ -354,14 +354,19 @@ void AWeaponBase::Reload()
         if (ReloadEmptySound)
             UGameplayStatics::PlaySoundAtLocation(GetWorld(), ReloadEmptySound, GetActorLocation());
 	}
-
 }
 
 void AWeaponBase::Fire()
 {
 	Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageFire);
-	if(FireSound)
+    FOnMontageEnded BlendOutDele;
+    BlendOutDele.BindUObject(this, &AWeaponBase::OnFireBlendOut);
+    Weapon->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, WeaponDA->MontageFire);
+	if (FireSound)
+	{
 		UGameplayStatics::PlaySoundAtLocation(GetWorld(), FireSound, GetActorLocation());
+	}
+
 	CurrentAmmo--;
 
 	OnWeaponFire.ExecuteIfBound();
@@ -405,6 +410,11 @@ void AWeaponBase::OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
     OnWeaponReload.ExecuteIfBound();
 }
 
+void AWeaponBase::OnFireBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
+{
+	PrintLine();
+}
+
 void AWeaponBase::Action()
 {
 	ACharacterBase* playerChar = Cast<ACharacterBase>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
@@ -433,6 +443,28 @@ class UTexture2D* AWeaponBase::GetWeaponScopeImage()
 TSubclassOf<UCrosshair> AWeaponBase::GetCrosshairClass()
 {
 	return WeaponDA->CrosshairClass;
+}
+
+void AWeaponBase::BoltActionReload()
+{
+    Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageReload);
+    if (ReloadSound)
+        UGameplayStatics::PlaySoundAtLocation(GetWorld(), ReloadSound, GetActorLocation(), 2.f);
+}
+
+void AWeaponBase::InsertBoltActionAmmo()
+{
+	return;
+}
+
+void AWeaponBase::AddOneAmmo()
+{
+	CurrentAmmo++;
+
+	if (!GetOwner())
+		return;
+
+	Cast<ACharacterBase>(GetOwner())->UpdateWeaponWidget();
 }
 
 bool AWeaponBase::IsReloading()

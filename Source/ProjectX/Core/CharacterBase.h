@@ -158,6 +158,8 @@ private:
 private:
 	void OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
     void OnUnholsterBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+    void OnFireBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+    void OnBoltActionReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
 
 
 	bool bPlayingMontageReloading = false;
@@ -190,7 +192,7 @@ private:
 public:
 	UAC_Inventory* GetInventory();
 
-private:
+public:
 	void UpdateWeaponWidget();
 	
 	void WeaponRecoil();
@@ -203,5 +205,17 @@ private:
     bool bShowPause;
 
 	TSubclassOf<class UCrosshair> CrosshairClass;
+
+private:
+	void BoltActionReload();
+
+private:
+	bool bCanFire = true;
+
+private:
+	void ReloadBoltActionAmmo();
+    void OnBoltActionOpenBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+	void BoltActionReloadAmmoCore();
+    void OnBoltActionCloseBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
 };
 

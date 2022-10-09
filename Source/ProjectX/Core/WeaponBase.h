@@ -165,7 +165,8 @@ public:
 
 	void SetAmmo(int8 InAmmo);
 	void ChangeFireType();
-	void OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+    virtual void OnReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+    virtual void OnFireBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
 	
 	void Action() override;
 	FText Description() override;
@@ -176,7 +177,7 @@ public:
 
 	class UTexture2D* GetWeaponScopeImage() override;
 
-private:
+protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess=true))
 	float EjectImpulse = 350.f;
 
@@ -212,6 +213,17 @@ public:
 
 public:
 	TSubclassOf<UCrosshair> GetCrosshairClass() override;
+
+public:
+	virtual bool IsBoltAction() override {
+		return false;
+	}
+
+	virtual void BoltActionReload() override;
+
+	virtual void InsertBoltActionAmmo();
+
+	virtual void AddOneAmmo();
 };
 
 

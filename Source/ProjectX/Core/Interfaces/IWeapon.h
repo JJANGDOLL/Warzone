@@ -55,4 +55,8 @@ public:
 	virtual EAmmoType GetWeaponAmmoType() = 0;
 
 	virtual TSubclassOf<class UCrosshair> GetCrosshairClass() = 0;
+
+	virtual bool IsBoltAction() = 0;
+	virtual void BoltActionReload() = 0;
+	virtual void AddOneAmmo() = 0;
 };
