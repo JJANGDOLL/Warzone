@@ -418,8 +418,10 @@ void ACharacterBase::Fire()
 
 void ACharacterBase::Reload()
 {
-
     if (bPlayingMontageReloading)
+        return;
+
+    if (!bCanReload)
         return;
 
     if (!GetEquippedWeapon())
@@ -686,7 +688,10 @@ void ACharacterBase::FireCore(UAnimMontage* Montage)
 
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(Montage);
     if (GetEquippedWeapon()->IsBoltAction())
+    {
         bCanFire = false;
+        bCanReload = false;
+    }
     FOnMontageEnded BlendOutDele;
     BlendOutDele.BindUObject(this, &ACharacterBase::OnFireBlendOut);
     SkeletalMeshArms->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, Montage);
@@ -752,6 +757,7 @@ void ACharacterBase::OnFireBlendOut(UAnimMontage* AnimMontage, bool bInterrupted
 void ACharacterBase::OnBoltActionReloadBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
 {
     bCanFire = true;
+    bCanReload = true;
 }
 
 void ACharacterBase::StartCrouch()

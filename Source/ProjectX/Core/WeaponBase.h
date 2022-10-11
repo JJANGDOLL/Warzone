@@ -185,7 +185,7 @@ protected:
 	uint8 MaxAmmo = 10;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
-	uint8 CurrentAmmo = 5;
+	uint8 CurrentAmmo = 2;
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Projx | Weapon | Opt", meta = (AllowPrivateAccess = true))
 	uint8 FireTypeIdx = 0;

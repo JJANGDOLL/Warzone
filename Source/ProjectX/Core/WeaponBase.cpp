@@ -267,10 +267,13 @@ void AWeaponBase::SpawnBullet()
 		bullet->SetPower(WeaponDA->BulletPower);
 		bullet->OnLaunch(false, bulletTransform.GetRotation().GetForwardVector() * WeaponDA->FireIntensity);
 	}
+
+    OnWeaponRecoil.ExecuteIfBound();
 }
 
 void AWeaponBase::SpawnFlame()
 {
+	PrintLine();
 	UGameplayStatics::SpawnEmitterAttached(Flame, Weapon, TEXT("SOCKET_Flame"), FVector::ZeroVector, FRotator::ZeroRotator, FVector(0.25f,  0.25f, 0.25f));
 }
 
@@ -359,6 +362,7 @@ void AWeaponBase::Reload()
 void AWeaponBase::Fire()
 {
 	Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageFire);
+
     FOnMontageEnded BlendOutDele;
     BlendOutDele.BindUObject(this, &AWeaponBase::OnFireBlendOut);
     Weapon->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, WeaponDA->MontageFire);
@@ -370,7 +374,6 @@ void AWeaponBase::Fire()
 	CurrentAmmo--;
 
 	OnWeaponFire.ExecuteIfBound();
-	OnWeaponRecoil.ExecuteIfBound();
 }
 
 USkeletalMeshComponent* AWeaponBase::GetWeaponBodyMesh()
@@ -447,7 +450,7 @@ TSubclassOf<UCrosshair> AWeaponBase::GetCrosshairClass()
 
 void AWeaponBase::BoltActionReload()
 {
-    Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageReload);
+	Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageReload);
     if (ReloadSound)
         UGameplayStatics::PlaySoundAtLocation(GetWorld(), ReloadSound, GetActorLocation(), 2.f);
 }

@@ -11,6 +11,8 @@ enum class EWeaponTypes : uint8
     ASSAULT_RIFLE_03,
     HANDGUN_01,
     HANDGUN_02,
+    HANDGUN_03,
+    HANDGUN_04,
     SHOTGUN_01,
     SNIPER_01,
     SNIPER_02,

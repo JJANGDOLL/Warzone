@@ -3,20 +3,25 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Core/WeaponBase.h"
 #include "Core/Interfaces/IMainWeapon.h"
+#include "Core/WeaponBoltActionBase.h"
 #include "Shotgun_01.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTX_API AShotgun_01 : public AWeaponBase, public IIMainWeapon
+class PROJECTX_API AShotgun_01 : public AWeaponBoltActionBase, public IIMainWeapon
 {
 	GENERATED_BODY()
 	
 public:
 	AShotgun_01();
-    virtual void SetWeaponName() override;
+
+
+	void SetWeaponName() override;
+	EAmmoType GetWeaponAmmoType();
+
+	void SpawnBullet() override;
 
 };

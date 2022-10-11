@@ -13,6 +13,8 @@ void AWeaponBoltActionBase::Reload()
 {
     PrintLine();
 
+    
+
     bPlayingBoltActionReloading = true;
 
     if (CurrentAmmo == MaxAmmo)
@@ -43,8 +45,7 @@ void AWeaponBoltActionBase::Fire()
 {
     PrintLine();
 
-
-//     Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageFire);
+    Weapon->GetAnimInstance()->Montage_Play(WeaponDA->MontageFire);
 //     FOnMontageEnded BlendOutDele;
 //     BlendOutDele.BindUObject(this, &AWeaponBoltActionBase::OnFireBlendOut);
 //     Weapon->GetAnimInstance()->Montage_SetBlendingOutDelegate(BlendOutDele, WeaponDA->MontageFire);

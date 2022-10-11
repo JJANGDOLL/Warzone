@@ -209,13 +209,15 @@ private:
 private:
 	void BoltActionReload();
 
-private:
+protected:
 	bool bCanFire = true;
+	bool bCanReload = true;
 
 private:
 	void ReloadBoltActionAmmo();
     void OnBoltActionOpenBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
 	void BoltActionReloadAmmoCore();
     void OnBoltActionCloseBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
+
 };
 

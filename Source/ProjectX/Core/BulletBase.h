@@ -47,7 +47,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 public:
-	void OnLaunch(bool bCinematic, FVector Velocity);
+	virtual void OnLaunch(bool bCinematic, FVector Velocity);
 	void SetPower(float InPower);
 
 	UFUNCTION(BlueprintNativeEvent, Category = "Collision")
