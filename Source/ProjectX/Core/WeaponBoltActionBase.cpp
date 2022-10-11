@@ -8,6 +8,7 @@
 #include "Sound/SoundCue.h"
 #include "Utilities/Global.h"
 #include "Datas/Weapons/WeaponPoseDA.h"
+#include "CharacterBase.h"
 
 void AWeaponBoltActionBase::Reload()
 {
@@ -92,6 +93,11 @@ void AWeaponBoltActionBase::InsertBoltActionAmmo()
 void AWeaponBoltActionBase::AddOneAmmo()
 {
     Super::AddOneAmmo();
-    if (CurrentAmmo == MaxAmmo)
+
+    ACharacterBase* ownerChar = Cast<ACharacterBase>(GetOwner());
+    if (!ownerChar)
+        return;
+
+    if (CurrentAmmo == MaxAmmo || ownerChar->IsBoltActionReloadStop())
         Weapon->GetAnimInstance()->Montage_JumpToSection("Close", WeaponDA->ReloadBoltaction);
 }

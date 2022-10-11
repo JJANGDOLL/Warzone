@@ -212,6 +212,7 @@ private:
 protected:
 	bool bCanFire = true;
 	bool bCanReload = true;
+	bool bBoltActionReloadStop = false;
 
 private:
 	void ReloadBoltActionAmmo();
@@ -219,5 +220,7 @@ private:
 	void BoltActionReloadAmmoCore();
     void OnBoltActionCloseBlendOut(UAnimMontage* AnimMontage, bool bInterrupted);
 
+public:
+	bool IsBoltActionReloadStop();
 };
 

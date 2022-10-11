@@ -354,6 +354,12 @@ void ACharacterBase::Fire()
 {
     RET_IS_UNARMED;
 
+    if (GetEquippedWeapon()->IsBoltAction() && bPlayingMontageReloading && !bBoltActionReloadStop)
+    {
+        bBoltActionReloadStop = true;
+        return;
+    }
+
     if (!bCanFire)
         return;
 
@@ -782,6 +788,9 @@ void ACharacterBase::StartAiming()
     if (!GetEquippedWeapon())
         return;
 
+    if (bPlayingMontageReloading)
+        return;
+
     StopRunning();
 
     bAiming = true;
@@ -1133,7 +1142,7 @@ void ACharacterBase::OnBoltActionOpenBlendOut(UAnimMontage* AnimMontage, bool bI
 
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
 
-    if (GetEquippedWeapon()->GetCurAmmo() != GetEquippedWeapon()->GetMaxAmmo())
+    if (GetEquippedWeapon()->GetCurAmmo() != GetEquippedWeapon()->GetMaxAmmo() && !bBoltActionReloadStop)
     {
         FOnMontageEnded BlendOutDele;
         BlendOutDele.BindUObject(this, &ACharacterBase::OnBoltActionOpenBlendOut);
@@ -1172,4 +1181,10 @@ void ACharacterBase::OnBoltActionOpenBlendOut(UAnimMontage* AnimMontage, bool bI
 void ACharacterBase::OnBoltActionCloseBlendOut(UAnimMontage* AnimMontage, bool bInterrupted)
 {
     bPlayingMontageReloading = false;
+    bBoltActionReloadStop = false;
+}
+
+bool ACharacterBase::IsBoltActionReloadStop()
+{
+    return bBoltActionReloadStop;
 }

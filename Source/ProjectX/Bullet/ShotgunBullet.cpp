@@ -11,7 +11,7 @@ void AShotgunBullet::OnLaunch(bool bCinematic, FVector Velocity)
 {
 //     Projectile->Velocity = Velocity;
 
-    for (uint8 i = 0; i < 7; i++)
+    for (uint8 i = 0; i < 11; i++)
     {
         AShotgunBulletCore* coreBullet = GetWorld()->SpawnActorDeferred<AShotgunBulletCore>(AShotgunBulletCore::StaticClass(), GetTransform(), this);
         coreBullet->SetPower(Power);

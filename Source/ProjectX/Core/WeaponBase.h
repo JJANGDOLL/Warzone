@@ -27,6 +27,23 @@ class UDataTable;
 class UScopeBase;
 class UCrosshair;
 
+#define WeaponInheritance(Name, AmmoType) \
+public: \
+virtual void SetWeaponName() override\
+{\
+WeaponName = Name;\
+}\
+EAmmoType GetWeaponAmmoType() override\
+{\
+return AmmoType; \
+}
+
+#define WeaponConstruct(ClassName) \
+ClassName::ClassName() \
+{\
+MakeWeapon();\
+}
+
 DECLARE_DELEGATE(FWeaponFire)
 DECLARE_DELEGATE(FWeaponRecoil);
 DECLARE_DELEGATE(FWeaponFiretypeChange)

@@ -7,7 +7,7 @@
 
 void AShotgunBulletCore::OnLaunch(bool bCinematic, FVector Velocity)
 {
-    FVector randomVector = FVector(FMath::FRandRange(0.f, 0.05f), FMath::FRandRange(0.f, 0.05f), FMath::FRandRange(0.f, 0.05f)) + GetActorForwardVector();
+    FVector randomVector = FVector(FMath::FRandRange(-0.05f, 0.05f), FMath::FRandRange(-0.05f, 0.05f), FMath::FRandRange(-0.05f, 0.05f)) + GetActorForwardVector();
     randomVector.Normalize();
 
     Projectile->Velocity = randomVector * Velocity.Size();
