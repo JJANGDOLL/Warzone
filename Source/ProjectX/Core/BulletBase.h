@@ -59,4 +59,10 @@ public:
 	class UMaterialInstanceConstant* WallDecalMaterial;
 
 	float Power = 2.f;
+
+    void HitWall(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+protected:
+	float LifeSpanTime = 5.f;
+	bool bShowText = true;
 };

@@ -43,7 +43,8 @@ ABulletBase::ABulletBase()
 void ABulletBase::BeginPlay()
 {
 	Super::BeginPlay();
-	SetLifeSpan(5.f);
+	CollisionBox->OnComponentHit.AddDynamic(this, &ABulletBase::HitWall);
+	SetLifeSpan(LifeSpanTime);
 }
 
 // Called every frame
@@ -73,6 +74,7 @@ void ABulletBase::HitCheck_Implementation(UPrimitiveComponent* OverlappedComp, A
 // 	Logger::Log(bFromSweep);
 // 	Logger::Log(SweepResult.BoneName.ToString());
 	IIDamageable* damagableActor = Cast<IIDamageable>(OtherActor);
+
 	if (damagableActor)
 	{
 		float power = Power;
@@ -86,15 +88,15 @@ void ABulletBase::HitCheck_Implementation(UPrimitiveComponent* OverlappedComp, A
 		}
 		damagableActor->Hitted(power , e, nullptr, this);
 		
-		ADamageText* dt = GetWorld()->SpawnActor<ADamageText>(DamageTextClass, SweepResult.ImpactPoint + GetActorUpVector() * 10.f + SweepResult.ImpactNormal * 5.f, FRotator::ZeroRotator);
-		dt->SetText(FText::AsNumber(power), critical);
+		if (bShowText)
+		{
+			ADamageText* dt = GetWorld()->SpawnActor<ADamageText>(DamageTextClass, SweepResult.ImpactPoint + GetActorUpVector() * 10.f + SweepResult.ImpactNormal * 5.f, FRotator::ZeroRotator);
+			dt->SetText(FText::AsNumber(power), critical);
+		}
 	}
 	else
 	{
-		Logger::Log(SweepResult.GetComponent());
-		Logger::Log(SweepResult.ImpactPoint);
 		FVector offset = SweepResult.ImpactPoint - SweepResult.GetComponent()->GetComponentLocation() - FVector(0.f, -1.f, -1.f);
-		Logger::Log(offset);
 
 		UStaticMeshComponent* sm_meshcomp = Cast<UStaticMeshComponent>(SweepResult.GetComponent());
 		if (sm_meshcomp)
@@ -121,5 +123,12 @@ void ABulletBase::PostInitializeComponents()
     Super::PostInitializeComponents();
 
     CollisionBox->OnComponentBeginOverlap.AddDynamic(this, &ABulletBase::HitCheck);
+}
+
+void ABulletBase::HitWall(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	PrintLine();
+
+    Destroy();
 }
 

@@ -7,6 +7,7 @@
 #include "Interfaces/ICharacter.h"
 #include "Datas/Characters/CharactersEnum.h"
 #include "Datas/Weapons/WeaponsEnum.h"
+#include "Interfaces/IDamageable.h"
 #include "CharacterBase.generated.h"
 
 class USkeletalMeshComponent;
@@ -20,7 +21,7 @@ class UAC_Inventory;
 class IIInteractable;
 
 UCLASS()
-class PROJECTX_API ACharacterBase : public ACharacter, public IICharacter
+class PROJECTX_API ACharacterBase : public ACharacter, public IICharacter, public IIDamageable
 {
 	GENERATED_BODY()
 
@@ -33,6 +34,12 @@ public:
 
 
 	void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+
+	float TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+
+	void Hitted(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser) override;
 
 protected:
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Components", meta = (AllowPrivateAccess = true))
@@ -85,6 +92,10 @@ public:
     void Crouching() override;
     bool IsBreath() override;
     void Breath() override;
+
+	void StartBreath();
+    void StopBreath();
+
 	bool IsHolster() override;
     void Holstering() override;
     void Unholstering() override;
@@ -97,6 +108,7 @@ public:
 	bool IsWeaponEquipped();
 // 	AWeaponBase* GetEquippedWeapon();
 	void UpdateEquippedWeapon();
+    void UpdateStatusWidget();
 
 private:
     AWeaponBase** EquippedWeapon;
@@ -222,5 +234,13 @@ private:
 
 public:
 	bool IsBoltActionReloadStop();
+
+protected:
+	float MaxHealth = 150.f;
+	float CurHealth;
+	float MaxEnergy = 100.f;
+	float CurEnergy;
+
+	float EnergyRecoverDilation = 1.f;
 };
 

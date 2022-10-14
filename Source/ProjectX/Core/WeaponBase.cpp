@@ -77,6 +77,8 @@ void AWeaponBase::BeginPlay()
 		Scope->AttachToComponent(SocketScope, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("Scope"));
 		Scope->EnableScope(WeaponDA->ScopeDT);
 	}
+
+	CurrentAmmo = MaxAmmo;
 }
 
 // Called every frame

@@ -30,6 +30,7 @@
 #include "Interfaces/IInteractable.h"
 #include "Widget/InteractTextWidget.h"
 #include "Widget/Crosshair.h"
+#include "Widget/PlayerStatus.h"
 
 #define SET_MAX_WALK_SPEED(p) GetCharacterMovement()->MaxWalkSpeed = p;
 #define RET_IS_UNARMED if(!GetEquippedWeapon()) return;
@@ -53,6 +54,7 @@ ACharacterBase::ACharacterBase()
     SkeletalMeshArms->SetSkeletalMesh(meshArms);
 
     SkeletalMeshArms->AddRelativeRotation(FRotator(0.f, -90.f, 0.f));
+    SkeletalMeshArms->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     SkeletalMeshArms->SetRelativeLocation(FVector(0.f, 0.f, -165.f));
     SpringArm->TargetArmLength = 0.f;
@@ -96,6 +98,8 @@ ACharacterBase::ACharacterBase()
 
     CrosshairClass = nullptr;
     Helpers::GetClass<UCrosshair>(&CrosshairClass, TEXT("WidgetBlueprint'/Game/ProjectX/Widgets/Crosshair/WBP_CrosshairDefault.WBP_CrosshairDefault_C'"));
+
+    GetCapsuleComponent()->SetCollisionProfileName(TEXT("PlayerBody"));
 }
 
 void ACharacterBase::OnConstruction(const FTransform& Transform)
@@ -116,6 +120,20 @@ void ACharacterBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
     Super::EndPlay(EndPlayReason);
 }
 
+float ACharacterBase::TakeDamage(float Damage, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    CurHealth -= Damage;
+
+    UpdateStatusWidget();
+    
+    return Super::TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
+void ACharacterBase::Hitted(float Damage, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, class AActor* DamageCauser)
+{
+    TakeDamage(Damage, DamageEvent, EventInstigator, DamageCauser);
+}
+
 USkeletalMeshComponent* ACharacterBase::GetMeshArms()
 {
     return SkeletalMeshArms;
@@ -128,6 +146,9 @@ void ACharacterBase::BeginPlay()
 
     Inventory->OnWeaponChanged.BindUObject(this, &ACharacterBase::NewWeapon);
     Inventory->OnWidgetUpdate.BindUObject(this, &ACharacterBase::UpdateWeaponWidget);
+
+    CurHealth = MaxHealth;
+    CurEnergy = MaxEnergy;
 
 //     if (IsWeaponEquipped())
 //         GetEquippedWeapon()->AttachToComponent(SkeletalMeshArms, FAttachmentTransformRules::SnapToTargetIncludingScale, TEXT("SOCKET_Weapon"));
@@ -154,6 +175,8 @@ void ACharacterBase::BeginPlay()
         verifyf(PlayerHUD, L"Invalid HUD");
         PlayerHUD->AddToPlayerScreen();
         PlayerHUD->SetCrosshairClass(CrosshairClass);
+        PlayerHUD->GetPlayerStatus()->SetHealth(MaxHealth, CurHealth);
+        PlayerHUD->GetPlayerStatus()->SetHealth(MaxEnergy, CurEnergy);
     }
 
     if (IS_UNARMED)
@@ -170,7 +193,7 @@ void ACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-//     Helpers::DrawGizmo(GetWorld(), GetActorLocation() + GetActorForwardVector() * 250.f, FQuat(GetController()->GetControlRotation()));
+    Helpers::DrawGizmo(GetWorld(), GetActorLocation() + GetActorForwardVector() * 250.f, FQuat(GetController()->GetControlRotation()));
 
     SpringArm->SetRelativeRotation(FRotator(GetControlRotation().Pitch, 0.f, 0.f));
     SetActorRelativeRotation(FRotator(0.f, GetControlRotation().Yaw, 0.f));
@@ -204,6 +227,34 @@ void ACharacterBase::Tick(float DeltaTime)
         }
         UpdateWidget();
     }
+
+    if (bRunning || !bBreath)
+    {
+        EnergyRecoverDilation = 0.f;
+        CurEnergy -= DeltaTime * 20;
+
+        if (CurEnergy <= 0.f)
+        {
+            if (bRunning)
+                bRunning = false;
+
+            if (!bBreath)
+                bBreath = true;
+        }
+
+    }
+    else
+    {
+        EnergyRecoverDilation += DeltaTime;
+        EnergyRecoverDilation = FMath::Clamp(EnergyRecoverDilation, 0.f, 2.f);
+    }
+
+    if (EnergyRecoverDilation >= 1)
+    {
+        CurEnergy += DeltaTime * 20;
+        CurEnergy = FMath::Clamp(CurEnergy, 0.f, MaxEnergy);
+    }
+    UpdateStatusWidget();
 }
 
 // Called to bind functionality to input
@@ -256,8 +307,8 @@ void ACharacterBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
     PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
     PlayerInputComponent->BindAction("Crouching", IE_Pressed, this, &ACharacterBase::StartCrouch);
     PlayerInputComponent->BindAction("Crouching", IE_Released, this, &ACharacterBase::StopCrouch);
-    PlayerInputComponent->BindAction("Breath", IE_Pressed, this, &ACharacterBase::Breath);
-    PlayerInputComponent->BindAction("Breath", IE_Released, this, &ACharacterBase::Breath);
+    PlayerInputComponent->BindAction("Breath", IE_Pressed, this, &ACharacterBase::StartBreath);
+    PlayerInputComponent->BindAction("Breath", IE_Released, this, &ACharacterBase::StopBreath);
     PlayerInputComponent->BindAction("FireType", IE_Pressed, this, &ACharacterBase::ChangeFireType);
 //     PlayerInputComponent->BindAction("Holstering", IE_Pressed, this, &ACharacterBase::Holstering);
     PlayerInputComponent->BindAction("Item1Key", IE_Pressed, this, &ACharacterBase::GetItemOne);
@@ -323,6 +374,15 @@ void ACharacterBase::UpdateEquippedWeapon()
         return;
 
     *EquippedWeapon = Cast<AWeaponBase>(Inventory->GetCurrentItem());
+}
+
+void ACharacterBase::UpdateStatusWidget()
+{
+    if (!PlayerHUD)
+        return;
+
+    PlayerHUD->GetPlayerStatus()->SetHealth(MaxHealth, CurHealth);
+    PlayerHUD->GetPlayerStatus()->SetEnergy(MaxEnergy, CurEnergy);
 }
 
 void ACharacterBase::DoNothing()
@@ -532,6 +592,9 @@ bool ACharacterBase::IsRunning()
 
 void ACharacterBase::Running()
 {
+    if (CurEnergy < 20.f)
+        return;
+
     if (bPlayingMontageReloading)
         return;
 
@@ -539,6 +602,8 @@ void ACharacterBase::Running()
         return;
 
     bRunning = true;
+
+
 
     SET_MAX_WALK_SPEED(450.f);
 }
@@ -585,7 +650,27 @@ bool ACharacterBase::IsBreath()
 
 void ACharacterBase::Breath()
 {
+    if (CurEnergy <= 20.f)
+        return;
+
     bBreath = !bBreath;
+}
+
+void ACharacterBase::StartBreath()
+{
+    if (!bAiming)
+        return;
+
+    if (CurEnergy <= 20.f)
+        return;
+
+    bBreath = false;
+}
+
+void ACharacterBase::StopBreath()
+{
+    bBreath = true;
+
 }
 
 bool ACharacterBase::IsHolster()

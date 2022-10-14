@@ -21,6 +21,7 @@ void ADamageText::BeginPlay()
 
     ACharacter* playerCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
 
+
     FRotator rot = playerCharacter->GetCapsuleComponent()->GetForwardVector().Rotation();
 
     GetTextRender()->SetRelativeRotation(FRotator(0.f, rot.Yaw + 180.f, 0.f));

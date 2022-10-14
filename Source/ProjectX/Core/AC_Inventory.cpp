@@ -197,6 +197,11 @@ void UAC_Inventory::PickupItem(IIItem* PickupItem)
 
 	if (Cast<IIMainWeapon>(PickupItem))
 	{
+        if (CurrentItem && *CurrentItem)
+            Cast<AWeaponBase>(*CurrentItem)->SetActorHiddenInGame(true);
+
+        CurrentItem = &Inventory[0];
+
         if (!Inventory[0])
         {
             if (CurrentItem && *CurrentItem)

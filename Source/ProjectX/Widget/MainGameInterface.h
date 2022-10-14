@@ -10,6 +10,7 @@
 class UWeaponWidget;
 class UWeaponTexture;
 class UInteractTextWidget;
+class UPlayerStatus;
 
 UCLASS()
 class PROJECTX_API UMainGameInterface : public UUserWidget
@@ -37,4 +38,9 @@ public:
 
 	UCrosshair* GetCrosshairWidget();
 	void SetCrosshairClass(TSubclassOf<UCrosshair> CrosshairClass);
+
+    UPROPERTY(EditAnywhere, meta = (BindWidget))
+    UPlayerStatus* StatusWidget;
+
+	UPlayerStatus* GetPlayerStatus();
 };

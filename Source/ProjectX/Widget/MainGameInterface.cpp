@@ -36,3 +36,8 @@ void UMainGameInterface::SetCrosshairClass(TSubclassOf<UCrosshair> CrosshairClas
     CrosshairWidget = CreateWidget<UCrosshair>(UGameplayStatics::GetPlayerController(GetWorld(), 0), CrosshairClass, TEXT("Crosshair"));
     CrosshairWidget->AddToViewport();
 }
+
+UPlayerStatus* UMainGameInterface::GetPlayerStatus()
+{
+    return StatusWidget;
+}
