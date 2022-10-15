@@ -832,6 +832,8 @@ void ACharacterBase::OnUnholsterBlendOut(UAnimMontage* AnimMontage, bool bInterr
 {
     PrintLine();
 
+    bPlayingMontageReloading = false;
+    bCanFire = true;
     bPlayingMontageUnholstering = false;
 }
 

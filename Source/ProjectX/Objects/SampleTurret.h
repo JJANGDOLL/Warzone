@@ -7,9 +7,8 @@
 #include "Core/Interfaces/IDamageable.h"
 #include "SampleTurret.generated.h"
 
-/**
- * 
- */
+class UCameraShakeBase;
+
 UCLASS()
 class PROJECTX_API ASampleTurret : public ATurretBase, public IIDamageable
 {
@@ -53,4 +52,7 @@ private:
 	class UParticleSystem* ExplodeParticle;
 
 	uint8 bulletCount = 0;
+
+    UPROPERTY(EditAnywhere)
+	TSubclassOf<UCameraShakeBase> MyShake;
 };

@@ -27,6 +27,8 @@ public:
 	void PostInitializeComponents() override;
 
 	FTimerHandle RecoverHandle;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projx | Data", meta = (AllowPrivateAccess = true))
 	bool bDown = true;
 
 	void Recover();
@@ -36,4 +38,7 @@ public:
 protected:
 	void BeginPlay() override;
 
+private:
+	UPROPERTY(EditInstanceOnly, BlueprintReadWrite, Category = "", meta = (AllowPrivateAccess = true))
+	bool bCanRecover = true;
 };

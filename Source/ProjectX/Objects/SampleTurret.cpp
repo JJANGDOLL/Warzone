@@ -10,6 +10,9 @@
 #include "Widget/EnemyStatus.h"
 #include "Particles/ParticleSystem.h"
 #include "Bullet/TurretBullet.h"
+#include "Camera/PlayerCameraManager.h"
+#include "ExplosionShake.h"
+#include "ExplodeCameraShake.h"
 
 ASampleTurret::ASampleTurret()
 {
@@ -33,6 +36,8 @@ ASampleTurret::ASampleTurret()
     StatusWidgetComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     Helpers::GetAsset(&ExplodeParticle, TEXT("ParticleSystem'/Game/InfimaGames/LowPolyShooterPack/Art/Effects/Particles/PS_EXP_Spherical_Small_Air.PS_EXP_Spherical_Small_Air'"));
+
+    MyShake = UExplodeCameraShake::StaticClass();
 }
 
 float ASampleTurret::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser)
@@ -74,6 +79,12 @@ void ASampleTurret::Tick(float DeltaTime)
     if (CurrentHealth <= 0)
     {
         UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), ExplodeParticle, GetTransform());
+
+        if (MyShake)
+        {
+            PrintLine();
+            GetWorld()->GetFirstPlayerController()->PlayerCameraManager->StartCameraShake(MyShake, 1.0f);
+        }
 
         Destroy();
     }

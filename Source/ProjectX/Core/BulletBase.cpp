@@ -43,7 +43,7 @@ ABulletBase::ABulletBase()
 void ABulletBase::BeginPlay()
 {
 	Super::BeginPlay();
-	CollisionBox->OnComponentHit.AddDynamic(this, &ABulletBase::HitWall);
+// 	CollisionBox->OnComponentHit.AddDynamic(this, &ABulletBase::HitWall);
 	SetLifeSpan(LifeSpanTime);
 }
 
@@ -52,7 +52,7 @@ void ABulletBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	Helpers::DrawGizmo(CollisionBox);
+// 	Helpers::DrawGizmo(CollisionBox);
 }
 
 void ABulletBase::OnLaunch(bool bCinematic, FVector Velocity)
