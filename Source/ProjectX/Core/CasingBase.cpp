@@ -54,6 +54,6 @@ void ACasingBase::Tick(float DeltaTime)
 
 void ACasingBase::ApplyImpulse(FVector Direction, const FVector Strength)
 {
-    Mesh->AddImpulse(Direction.Normalize() * Strength);
+    ProjectileMovement->Velocity = Direction * Strength;
 }
 

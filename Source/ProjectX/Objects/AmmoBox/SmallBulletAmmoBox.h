@@ -17,5 +17,4 @@ class PROJECTX_API ASmallBulletAmmoBox : public AAmmoBoxCore
 protected:
 	void SetAmmoType() override;
 	void SetDescriptionText() override;
-
 };

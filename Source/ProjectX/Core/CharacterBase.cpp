@@ -193,7 +193,7 @@ void ACharacterBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    Helpers::DrawGizmo(GetWorld(), GetActorLocation() + GetActorForwardVector() * 250.f, FQuat(GetController()->GetControlRotation()));
+//     Helpers::DrawGizmo(GetWorld(), GetActorLocation() + GetActorForwardVector() * 250.f, FQuat(GetController()->GetControlRotation()));
 
     SpringArm->SetRelativeRotation(FRotator(GetControlRotation().Pitch, 0.f, 0.f));
     SetActorRelativeRotation(FRotator(0.f, GetControlRotation().Yaw, 0.f));
@@ -539,6 +539,7 @@ void ACharacterBase::Reload()
     slotAim.AnimTrack.AnimSegments.Add(newSegment);
 
     SkeletalMeshArms->GetAnimInstance()->Montage_Play(montage);
+
 
     FOnMontageEnded BlendOutDele;
     BlendOutDele.BindUObject(this, &ACharacterBase::OnReloadBlendOut);
